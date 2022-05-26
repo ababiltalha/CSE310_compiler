@@ -49,7 +49,7 @@ bool ScopeTable::insertSymbol(string name, string type){
 //     bool deleteSymbol(string name);
 //     SymbolInfo* lookupSymbol(string name);
 void ScopeTable::print(){
-    //
+    cout<<"ScopeTable# "<<id<<endl;
     for (int i = 0; i < bucket; i++)
     {
         SymbolInfo* current=this->hashTable[i];
