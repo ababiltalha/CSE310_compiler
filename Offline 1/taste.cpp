@@ -1,4 +1,5 @@
 #include<bits/stdc++.h>
+#include "ScopeTable.cpp"
 using namespace std;
 
 unsigned long hashFunction(string name){
@@ -10,5 +11,12 @@ unsigned long hashFunction(string name){
 
 int main()
 {
-    cout<<hashFunction("a")<<endl;
+    // cout<<hashFunction("a")<<endl;
+    ScopeTable sc(7, nullptr);
+    cout<<sc.insertSymbol("a","a");
+    cout<<sc.insertSymbol("foo","FUNCTION");
+    cout<<sc.insertSymbol("a","b");
+    cout<<sc.insertSymbol("5","NUMBER");
+    cout<<sc.insertSymbol("i","VAR");
+    sc.print();
 }

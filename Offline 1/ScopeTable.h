@@ -6,6 +6,7 @@ using namespace std;
 class ScopeTable
 {
 private:
+    // static int globalId;
     SymbolInfo** hashTable;
     int bucket;
     string id;
