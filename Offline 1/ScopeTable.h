@@ -12,10 +12,10 @@ private:
     string id;
     int innerScopeCount; //child num
     ScopeTable* parentScope;
+    uint32_t hashFunction(string name);
 public:
     ScopeTable(int bucket, ScopeTable* parent, int globalId);
     ~ScopeTable();
-    unsigned long hashFunction(string name);
     bool insertSymbol(string name, string type);
     bool deleteSymbol(string name);
     SymbolInfo* lookupSymbol(string name);

@@ -19,10 +19,12 @@ SymbolTable::~SymbolTable(){
 void SymbolTable::enterScope(){
     if(this->currentScope==nullptr){
         this->currentScope=new ScopeTable(this->bucket, nullptr, ++this->globalId);
+        cout<<"New ScopeTable with id "<<this->currentScope->getId()<<" created";
         return;
     }
     ScopeTable* newScope= new ScopeTable(this->bucket, this->currentScope, this->globalId);
     this->currentScope=newScope;
+    cout<<"New ScopeTable with id "<<this->currentScope->getId()<<" created";
 }
 
 void SymbolTable::exitScope(){
@@ -32,6 +34,7 @@ void SymbolTable::exitScope(){
         return;
     }
     ScopeTable* parent=this->currentScope->getParentScope();
+    cout<<"ScopeTable with id "<<this->currentScope->getId()<<" removed";
     delete this->currentScope;
     this->currentScope=parent;
 }
@@ -39,7 +42,6 @@ void SymbolTable::exitScope(){
 void SymbolTable::insertSymbol(string name, string type){
     if(this->currentScope==nullptr){
         this->currentScope= new ScopeTable(this->bucket, nullptr, ++this->globalId);
-        
     }
     this->currentScope->insertSymbol(name, type);
 }
@@ -47,7 +49,8 @@ void SymbolTable::insertSymbol(string name, string type){
 bool SymbolTable::removeSymbol(string name){
     // if(this->lookUpSymbol(name))
     if(this->currentScope==nullptr){
-        this->currentScope=new ScopeTable(this->bucket, nullptr, ++this->globalId);
+        cout<<"No current scope";
+        return false;
     }
     return this->currentScope->deleteSymbol(name);
 }

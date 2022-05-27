@@ -29,16 +29,16 @@ int main()
     // Object o(123);
     // Object o= new Object(123);
 
+
+
     SymbolTable st(7);
     st.insertSymbol("a", "a");
     st.insertSymbol("5", "NUMBER");
-    st.enterScope();
     st.insertSymbol("foo", "FUNCTION");
+    st.insertSymbol("t", "t");
     st.printCurrentScope();
     st.printAllScope();
     cout<<st.removeSymbol("foo");
-    cout<<*st.lookUpSymbol("foo");
-    st.printCurrentScope();
     st.printAllScope();
     return 0;
 }
