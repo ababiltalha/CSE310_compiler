@@ -4,6 +4,7 @@ SymbolTable::SymbolTable(int bucket){
     this->bucket=bucket;
     this->globalId=0;
     this->currentScope=new ScopeTable(bucket, nullptr, ++this->globalId);
+    cout<<"SymbolTable with bucket size "+ to_string(bucket) +" created"<<endl;
 }
 
 SymbolTable::~SymbolTable(){
@@ -12,6 +13,7 @@ SymbolTable::~SymbolTable(){
         delete this->currentScope;
         this->currentScope=parent;
     }
+    cout<<"ScopeTable closed"<<endl;
 }
 
 void SymbolTable::enterScope(){
