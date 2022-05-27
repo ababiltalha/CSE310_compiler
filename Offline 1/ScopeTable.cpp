@@ -20,6 +20,17 @@ ScopeTable::ScopeTable(int bucket, ScopeTable* parent, int globalId){
 
 ScopeTable::~ScopeTable(){
     // write
+    for (int i = 0; i < this->bucket; i++)
+    {
+        SymbolInfo* temp;
+        while(this->hashTable[i]!=nullptr) {
+            temp=this->hashTable[i]->getNext();
+            delete this->hashTable[i];
+            this->hashTable[i]=temp;
+        }
+    }
+    
+        
 }
 
 unsigned long ScopeTable::hashFunction(string name){
