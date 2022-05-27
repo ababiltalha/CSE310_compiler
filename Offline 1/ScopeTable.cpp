@@ -8,11 +8,11 @@ ScopeTable::ScopeTable(int bucket, ScopeTable* parent){
     {
         hashTable[i]=nullptr;
     }
-    this->innerScope=0;
-    if (parent!=nullptr){
-        (this->parentScope->innerScope)++;
-        id=this->parentScope->id+"."+
-        to_string(this->parentScope->innerScope);
+    this->innerScopeCount=0;
+    if (this->parentScope!=nullptr){
+        (this->parentScope->innerScopeCount)++;
+        this->id=this->parentScope->id+"."+
+        to_string(this->parentScope->innerScopeCount);
     }
     // global scope
     else id=to_string(1);
@@ -25,7 +25,7 @@ ScopeTable::~ScopeTable(){
 unsigned long ScopeTable::hashFunction(string name){
     unsigned long hash=0;
     for (int i = 0; i < name.size(); i++)
-        hash = name[i] + (hash << 6) + (hash << 16) - hash;
+        hash = (int)name[i] + (hash << 6) + (hash << 16) - hash;
     return hash%bucket;
 }
 
@@ -46,8 +46,40 @@ bool ScopeTable::insertSymbol(string name, string type){
     return true;
     
 }
-//     bool deleteSymbol(string name);
-//     SymbolInfo* lookupSymbol(string name);
+
+bool ScopeTable::deleteSymbol(string name){
+    int hashVal=hashFunction(name);
+    SymbolInfo* current=this->hashTable[hashVal];
+    SymbolInfo* prev=nullptr;
+    // check current
+    if(current->getName()==name){
+        this->hashTable[hashVal]=current->getNext();
+        delete current;
+        return true;
+    }
+    while(current!=nullptr){
+        if(current->getName()==name) {
+            prev->setNext(current->getNext());
+            delete current;
+            return true;
+        }
+        prev=current;
+        current=current->getNext();
+    }
+    return false;
+}
+
+SymbolInfo* ScopeTable::lookupSymbol(string name){
+    int hashVal=hashFunction(name);
+    SymbolInfo* current=this->hashTable[hashVal];
+    while(current!=nullptr){
+        if(current->getName()==name) {
+            return current;
+        }
+        current=current->getNext();
+    }
+    return nullptr;
+}
 void ScopeTable::print(){
     cout<<"ScopeTable# "<<id<<endl;
     for (int i = 0; i < bucket; i++)
@@ -59,7 +91,14 @@ void ScopeTable::print(){
             current=current->getNext();
         }
     }
-    
+    cout<<endl;  
 }
-//     string getId();
-//     int getInnerScope();
+string ScopeTable::getId(){
+    return this->id;
+}
+int ScopeTable::getInnerScopeCount(){
+    return this->innerScopeCount;
+}
+ScopeTable* ScopeTable::getParentScope(){
+    return this->parentScope;
+}

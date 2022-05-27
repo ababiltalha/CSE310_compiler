@@ -1,10 +1,8 @@
 #include "SymbolInfo.h"
 
-SymbolInfo::SymbolInfo(string name, string type){
-    this->name=name;
-    this->type=type;
-    this->next=nullptr;
-}
+SymbolInfo::SymbolInfo(string name, string type)
+    :name{name}, type{type}, next{nullptr}
+{}
 
 SymbolInfo::~SymbolInfo(){
     //
@@ -37,6 +35,7 @@ void SymbolInfo::setNext(SymbolInfo* next){
 }
 
 ostream &operator<<(ostream &output, SymbolInfo &symbol){
-    output<<"< "<<symbol.name<<" : "<<symbol.type<<" >";
+    if (&symbol!=nullptr) output<<"< "<<symbol.name<<" : "<<symbol.type<<" >";
+    else output<<"Not found"<<endl;
     return output;
 }

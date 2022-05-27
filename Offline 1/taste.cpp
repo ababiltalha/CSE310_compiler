@@ -1,6 +1,7 @@
 #include<bits/stdc++.h>
 #include "ScopeTable.cpp"
 using namespace std;
+using namespace std;
 
 unsigned long hashFunction(string name){
     unsigned long hash=0;
@@ -19,4 +20,11 @@ int main()
     cout<<sc.insertSymbol("5","NUMBER");
     cout<<sc.insertSymbol("i","VAR");
     sc.print();
+    cout<<*sc.lookupSymbol("5");
+    cout<<*sc.lookupSymbol("a");
+    cout<<*sc.lookupSymbol("b");
+    cout<<sc.deleteSymbol("a");
+    sc.print();
+    // Object o(123);
+    // Object o= new Object(123);
 }

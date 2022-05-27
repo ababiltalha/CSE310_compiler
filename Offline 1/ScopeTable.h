@@ -10,7 +10,7 @@ private:
     SymbolInfo** hashTable;
     int bucket;
     string id;
-    int innerScope; //child num
+    int innerScopeCount; //child num
     ScopeTable* parentScope;
 public:
     ScopeTable(int bucket, ScopeTable* parent);
@@ -21,7 +21,8 @@ public:
     SymbolInfo* lookupSymbol(string name);
     void print();
     string getId();
-    int getInnerScope();
+    int getInnerScopeCount();
+    ScopeTable* getParentScope();
 };
 
 
