@@ -36,4 +36,5 @@ int main()
 			else if(command=="C") symbolTable->printCurrentScope();
         }
 	}
+    delete symbolTable;
 }

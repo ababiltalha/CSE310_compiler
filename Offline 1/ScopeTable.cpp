@@ -23,9 +23,9 @@ ScopeTable::~ScopeTable(){
     for (int i = 0; i < this->bucket; i++)
     {
         SymbolInfo* temp;
-        if(this->hashTable[i]!=nullptr) {
+        while(this->hashTable[i]!=nullptr) {
             temp=this->hashTable[i]->getNext();
-            delete this->hashTable[i]; // array delete?
+            delete this->hashTable[i]; // array delete? no
             this->hashTable[i]=temp;
         }
     }

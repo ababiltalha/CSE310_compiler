@@ -13,7 +13,7 @@ SymbolTable::~SymbolTable(){
         delete this->currentScope;
         this->currentScope=parent;
     }
-    cout<<"ScopeTable closed"<<endl;
+    cout<<"\n\nSymbolTable closed\n"<<endl;
 }
 
 void SymbolTable::enterScope(){
