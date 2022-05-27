@@ -23,12 +23,13 @@ ScopeTable::~ScopeTable(){
     for (int i = 0; i < this->bucket; i++)
     {
         SymbolInfo* temp;
-        while(this->hashTable[i]!=nullptr) {
+        if(this->hashTable[i]!=nullptr) {
             temp=this->hashTable[i]->getNext();
-            delete this->hashTable[i];
+            delete this->hashTable[i]; // array delete?
             this->hashTable[i]=temp;
         }
     }
+    delete[] this->hashTable;
     
         
 }
