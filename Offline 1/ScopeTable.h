@@ -13,7 +13,7 @@ private:
     int innerScopeCount; //child num
     ScopeTable* parentScope;
 public:
-    ScopeTable(int bucket, ScopeTable* parent);
+    ScopeTable(int bucket, ScopeTable* parent, int globalId);
     ~ScopeTable();
     unsigned long hashFunction(string name);
     bool insertSymbol(string name, string type);

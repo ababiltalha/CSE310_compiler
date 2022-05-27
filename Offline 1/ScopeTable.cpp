@@ -1,6 +1,6 @@
 #include "ScopeTable.h"
 
-ScopeTable::ScopeTable(int bucket, ScopeTable* parent){
+ScopeTable::ScopeTable(int bucket, ScopeTable* parent, int globalId){
     this->bucket=bucket;
     this->parentScope=parent;
     this->hashTable=new SymbolInfo*[bucket];
@@ -15,7 +15,7 @@ ScopeTable::ScopeTable(int bucket, ScopeTable* parent){
         to_string(this->parentScope->innerScopeCount);
     }
     // global scope
-    else id=to_string(1);
+    else id=to_string(globalId);
 }
 
 ScopeTable::~ScopeTable(){
@@ -50,6 +50,7 @@ bool ScopeTable::insertSymbol(string name, string type){
 bool ScopeTable::deleteSymbol(string name){
     int hashVal=hashFunction(name);
     SymbolInfo* current=this->hashTable[hashVal];
+    if(current==nullptr) return false;
     SymbolInfo* prev=nullptr;
     // check current
     if(current->getName()==name){
