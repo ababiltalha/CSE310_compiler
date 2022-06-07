@@ -109,7 +109,7 @@ SymbolInfo* ScopeTable::lookupSymbol(string name){
         current=current->getNext();
         position++;
     }
-    cout<<"Not found";
+    // cout<<"Not found";
     return nullptr;
 }
 

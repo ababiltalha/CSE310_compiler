@@ -54,12 +54,25 @@ bool SymbolTable::removeSymbol(string name){
     }
     return this->currentScope->deleteSymbol(name);
 }
-
+// have to implement lookup including the parent scopes
 SymbolInfo* SymbolTable::lookUpSymbol(string name){
-    if(this->currentScope==nullptr){
-        this->currentScope=new ScopeTable(this->bucket, nullptr, this->globalId);
+    // if(this->currentScope==nullptr){
+    //     cout<<"No current scope";
+    //     return nullptr;
+    // }
+    ScopeTable* temp=this->currentScope;
+    SymbolInfo* searchResult;
+    while(temp!=nullptr){
+        searchResult=temp->lookupSymbol(name);
+        if(searchResult==nullptr){
+            temp=temp->getParentScope();
+        }
+        else return searchResult;
     }
-    return this->currentScope->lookupSymbol(name);
+    cout<<"Not found";
+    return nullptr;
+
+    // return this->currentScope->lookupSymbol(name);
 }
 
 void SymbolTable::printCurrentScope(){
