@@ -1,15 +1,29 @@
 %option noyywrap
 
+%x UNKNOWN_WORD
+
 %{
-#include<stdio.h>
-#include<stdlib.h>
+#include<bits/stdc++.h>
 
 int line_count=1;
+int word_count=0;
+int error_count=0;
+
+char* scannedString="";
+
 
 FILE *logout;
 FILE *tokenout;
 
-char* toupper(char *s){
+void increaseWordCount(){
+	word_count++;
+}
+
+void increaseErrorCount(){
+	error_count++;
+}
+
+char* toUpper(char *s){
     int i;
     char* u= new char;
     for (i = 0; s[i]!='\0'; i++) {
@@ -20,14 +34,23 @@ char* toupper(char *s){
    return u;
 }
 
-void detectkeyword(char *str){
-    char* s= toupper(str);
+void detectKeyword(char *str){
+    char* s= toUpper(str);
     fprintf(tokenout,"<%s>",s);
-	fprintf(logout,"Line no %d: TOKEN <%s> Lexeme %s found\n",line_count,s,yytext);
+	fprintf(logout,"Line no %d: TOKEN <%s> Lexeme %s found\n",line_count,s,str);
+	// increaseWordCount();
 }
 
+void detectUnknownWord(char *str){
+	increaseErrorCount();
+	printf("Unknown word %s\n", str);
+	fprintf(logout,"Error at line no %d: Unrecognized word %s\n",line_count,str);
+}
 
-
+void endOfFile(){
+	fprintf(logout,"Total Line Count: %d\n",line_count);
+	fprintf(logout,"Total Error Count: %d\n",error_count);
+}
 
 %}
 
@@ -36,32 +59,28 @@ LETTER [a-zA-Z]
 DIGIT [0-9]
 NEWLINE \n
 KEYWORD if|else|for|while|do|break|int|char|float|double|void|return|switch|case|default|continue
+CONST_INT {DIGIT}+
+CONST_FLOAT {DIGIT}*({DIGIT}\.?|\.{DIGIT}){DIGIT}*([Ee][-+]?{DIGIT}+)?
+
 
 %%
 
+{WHITESPACE} {}
+
 {NEWLINE} {line_count++;}
 
-{KEYWORD} {detectkeyword(yytext);}
+{KEYWORD} {detectKeyword(yytext);}
+
+{CONST_INT} {
+	printf("Integer literal found %s\n", yytext);
+	fprintf(tokenout,"<CONST_INT, %s>", yytext);
+	fprintf(logout,"Line no %d: TOKEN <CONST_INT, %s> Lexeme %s found\n",line_count,yytext,yytext);
+}
+
+{CONST_FLOAT} {}
 
 
 
-
-
-"+"		|
-
-"-"		{
-			fprintf(tokenout,"<ADDOP,%s>",yytext);
-			fprintf(logout,"Line no %d: TOKEN <ADDOP> Lexeme %s found\n",line_count,yytext);
-			//insert in symbol table and print symbol table content(only non empty buckets)
-			// There is a '|' in "+"'s rule, this means match execute the action for following rule
-		}
-		
-{DIGIT}+ 	{
-				fprintf(tokenout,"<CONST_INT,%s>",yytext);
-				fprintf(logout,"Line no %d: TOKEN <CONST_INT> Lexeme %s found\n",line_count,yytext);
-				//insert in symbol table and print symbol table content(only non empty buckets)
-			}
-			
 
 %%
 
