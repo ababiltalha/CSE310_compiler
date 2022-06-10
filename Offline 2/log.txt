@@ -1,0 +1,5 @@
+Line no 1: TOKEN <IF> Lexeme if found
+Line no 1: TOKEN <ELSE> Lexeme else found
+Line no 1: TOKEN <WHILE> Lexeme while found
+Line no 1: TOKEN <BREAK> Lexeme break found
+Line no 1: TOKEN <CONTINUE> Lexeme continue found
