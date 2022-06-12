@@ -534,9 +534,9 @@ char *yytext;
 int lineCount=1;
 int wordCount=0;
 int errorCount=0;
-int discoveryLine;
+int logStringStart;
 
-string scannedString="";
+string tokenString="";
 string logString="";
 string newString="";
 
@@ -1093,9 +1093,9 @@ YY_RULE_SETUP
 #line 277 "analyzer.l"
 {
 	BEGIN STRING_STATE;
-	discoveryLine=lineCount;
+	logStringStart=lineCount;
 	newString=yytext;
-	scannedString.append(newString);
+	tokenString.append(newString);
 	logString.append(newString);
 }
 	YY_BREAK
@@ -1104,12 +1104,12 @@ YY_RULE_SETUP
 #line 285 "analyzer.l"
 {
 	newString=yytext;
-	scannedString.append(newString);
+	tokenString.append(newString);
 	logString.append(newString);
-	fprintf(tokenout,"<STRING,%s> ",scannedString.c_str());
-	fprintf(logout,"Line no %d: Token <STRING> Lexeme %s found --> <STRING,%s> \n\n",discoveryLine,logString.c_str(),scannedString.c_str());
+	fprintf(tokenout,"<STRING,%s> ",tokenString.c_str());
+	fprintf(logout,"Line no %d: Token <STRING> Lexeme %s found --> <STRING,%s> \n\n",logStringStart,logString.c_str(),tokenString.c_str());
 	BEGIN INITIAL;
-	scannedString="";
+	tokenString="";
 	logString="";
 }
 	YY_BREAK
@@ -1122,7 +1122,7 @@ YY_RULE_SETUP
 	char ch= toSpecial(yytext);
 	// printf("%c", ch);
 	newString= ch;
-	scannedString.append(newString);	
+	tokenString.append(newString);	
 }
 	YY_BREAK
 case 28:
@@ -1141,9 +1141,9 @@ YY_RULE_SETUP
 	increaseErrorCount();
 	newString=yytext;
 	logString.append(newString);
-	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
-	scannedString="";
+	tokenString="";
 	logString="";
 }
 	YY_BREAK
@@ -1154,9 +1154,9 @@ YY_RULE_SETUP
 	lineCount++;
 	increaseErrorCount();
 	// logString.append(newString);
-	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
-	scannedString="";
+	tokenString="";
 	logString="";
 }
 	YY_BREAK
@@ -1165,7 +1165,7 @@ YY_RULE_SETUP
 #line 331 "analyzer.l"
 {
 	newString=yytext;
-	scannedString.append(newString);
+	tokenString.append(newString);
 	logString.append(newString);
 }
 	YY_BREAK
@@ -1173,9 +1173,9 @@ case YY_STATE_EOF(STRING_STATE):
 #line 337 "analyzer.l"
 {
 	increaseErrorCount();
-	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
-	scannedString="";
+	tokenString="";
 	logString="";
 	endOfFile();
 	return 0;
@@ -1186,7 +1186,7 @@ YY_RULE_SETUP
 #line 347 "analyzer.l"
 {
 	BEGIN SINGLELINE_CMNT_STATE;
-	discoveryLine=lineCount;
+	logStringStart=lineCount;
 	newString=yytext;
 	logString.append(newString);
 }
@@ -1196,7 +1196,7 @@ YY_RULE_SETUP
 #line 354 "analyzer.l"
 {
 	lineCount++;
-	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
 	logString="";
 }
@@ -1229,9 +1229,9 @@ YY_RULE_SETUP
 case YY_STATE_EOF(SINGLELINE_CMNT_STATE):
 #line 377 "analyzer.l"
 {
-	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
-	scannedString="";
+	tokenString="";
 	logString="";
 	endOfFile();
 	return 0;
@@ -1242,7 +1242,7 @@ YY_RULE_SETUP
 #line 386 "analyzer.l"
 {
 	BEGIN MULTILINE_CMNT_STATE;
-	discoveryLine=lineCount;
+	logStringStart=lineCount;
 	newString=yytext;
 	logString.append(newString);
 }
@@ -1254,7 +1254,7 @@ YY_RULE_SETUP
 	BEGIN INITIAL;
 	newString=yytext;
 	logString.append(newString);
-	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",logStringStart,logString.c_str());
 	logString="";
 }
 	YY_BREAK
@@ -1280,7 +1280,7 @@ case YY_STATE_EOF(MULTILINE_CMNT_STATE):
 {
 	BEGIN INITIAL;
 	increaseErrorCount();
-	fprintf(logout,"Error at line no %d: Unterminated comment %s\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated comment %s\n\n",logStringStart,logString.c_str());
 	endOfFile();
 	return 0;
 }

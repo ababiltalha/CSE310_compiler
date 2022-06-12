@@ -13,9 +13,9 @@
 int lineCount=1;
 int wordCount=0;
 int errorCount=0;
-int discoveryLine;
+int logStringStart;
 
-string scannedString="";
+string tokenString="";
 string logString="";
 string newString="";
 
@@ -276,20 +276,20 @@ EMPTY_CHAR \'\'
 
 "\"" {
 	BEGIN STRING_STATE;
-	discoveryLine=lineCount;
+	logStringStart=lineCount;
 	newString=yytext;
-	scannedString.append(newString);
+	tokenString.append(newString);
 	logString.append(newString);
 }
 
 <STRING_STATE>"\"" {
 	newString=yytext;
-	scannedString.append(newString);
+	tokenString.append(newString);
 	logString.append(newString);
-	fprintf(tokenout,"<STRING,%s> ",scannedString.c_str());
-	fprintf(logout,"Line no %d: Token <STRING> Lexeme %s found --> <STRING,%s> \n\n",discoveryLine,logString.c_str(),scannedString.c_str());
+	fprintf(tokenout,"<STRING,%s> ",tokenString.c_str());
+	fprintf(logout,"Line no %d: Token <STRING> Lexeme %s found --> <STRING,%s> \n\n",logStringStart,logString.c_str(),tokenString.c_str());
 	BEGIN INITIAL;
-	scannedString="";
+	tokenString="";
 	logString="";
 }
 
@@ -299,7 +299,7 @@ EMPTY_CHAR \'\'
 	char ch= toSpecial(yytext);
 	// printf("%c", ch);
 	newString= ch;
-	scannedString.append(newString);	
+	tokenString.append(newString);	
 }
 
 <STRING_STATE>[\\]{NEWLINE} {
@@ -312,9 +312,9 @@ EMPTY_CHAR \'\'
 	increaseErrorCount();
 	newString=yytext;
 	logString.append(newString);
-	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
-	scannedString="";
+	tokenString="";
 	logString="";
 }
 
@@ -322,23 +322,23 @@ EMPTY_CHAR \'\'
 	lineCount++;
 	increaseErrorCount();
 	// logString.append(newString);
-	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
-	scannedString="";
+	tokenString="";
 	logString="";
 }
 
 <STRING_STATE>. {
 	newString=yytext;
-	scannedString.append(newString);
+	tokenString.append(newString);
 	logString.append(newString);
 }
 
 <STRING_STATE><<EOF>> {
 	increaseErrorCount();
-	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
-	scannedString="";
+	tokenString="";
 	logString="";
 	endOfFile();
 	return 0;
@@ -346,14 +346,14 @@ EMPTY_CHAR \'\'
 
 \/\/ {
 	BEGIN SINGLELINE_CMNT_STATE;
-	discoveryLine=lineCount;
+	logStringStart=lineCount;
 	newString=yytext;
 	logString.append(newString);
 }
 
 <SINGLELINE_CMNT_STATE>{NEWLINE} {
 	lineCount++;
-	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
 	logString="";
 }
@@ -375,9 +375,9 @@ EMPTY_CHAR \'\'
 }
 
 <SINGLELINE_CMNT_STATE><<EOF>> {
-	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
-	scannedString="";
+	tokenString="";
 	logString="";
 	endOfFile();
 	return 0;
@@ -385,7 +385,7 @@ EMPTY_CHAR \'\'
 
 \/\* {
 	BEGIN MULTILINE_CMNT_STATE;
-	discoveryLine=lineCount;
+	logStringStart=lineCount;
 	newString=yytext;
 	logString.append(newString);
 }
@@ -394,7 +394,7 @@ EMPTY_CHAR \'\'
 	BEGIN INITIAL;
 	newString=yytext;
 	logString.append(newString);
-	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",logStringStart,logString.c_str());
 	logString="";
 }
 
@@ -413,7 +413,7 @@ EMPTY_CHAR \'\'
 <MULTILINE_CMNT_STATE><<EOF>> {
 	BEGIN INITIAL;
 	increaseErrorCount();
-	fprintf(logout,"Error at line no %d: Unterminated comment %s\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated comment %s\n\n",logStringStart,logString.c_str());
 	endOfFile();
 	return 0;
 }
