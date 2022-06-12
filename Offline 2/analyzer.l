@@ -57,6 +57,7 @@ char toSpecial(char* s){
 		if(s[1]=='b') sp='\b';
 		if(s[1]=='v') sp='\v';
 		if(s[1]=='0') sp='\0';
+		if(s[1]=='\"') sp='\"';
 		return sp;
 	}
 	if(s[1]!= '\\') sp=s[1];
@@ -71,6 +72,7 @@ char toSpecial(char* s){
 		if(s[2]=='b') sp='\b';
 		if(s[2]=='v') sp='\v';
 		if(s[2]=='0') sp='\0';
+		if(s[1]=='\"') sp='\"';
 	}
 	return sp;
 }
@@ -108,7 +110,7 @@ KEYWORD if|else|for|while|do|break|int|char|float|double|void|return|switch|case
 CONST_INT {DIGIT}+
 CONST_FLOAT {DIGIT}*({DIGIT}\.?|\.{DIGIT}){DIGIT}*([Ee][-+]?{DIGIT}+)?
 CHAR [ -~]
-SPECIAL_CHAR \\[\\nfratbv0\']
+SPECIAL_CHAR \\[\\nfratbv0\'\"]
 CONST_CHAR \'({CHAR}|{SPECIAL_CHAR})\'
 LCURL [{]
 RCURL [}]
@@ -291,11 +293,11 @@ EMPTY_CHAR \'\'
 	logString="";
 }
 
-<STRING_STATE>[\\][\\nfratbv0\'] {
+<STRING_STATE>[\\][\\nfratbv0\'\"] {
 	newString=yytext;
 	logString.append(newString);
 	char ch= toSpecial(yytext);
-	printf("%c", ch);
+	// printf("%c", ch);
 	newString= ch;
 	scannedString.append(newString);	
 }
@@ -310,7 +312,7 @@ EMPTY_CHAR \'\'
 	increaseErrorCount();
 	newString=yytext;
 	logString.append(newString);
-	fprintf(logout,"Error at the line no %d: Unterminated String %s\n\n",discoveryLine,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",discoveryLine,logString.c_str());
 	BEGIN INITIAL;
 	scannedString="";
 	logString="";
@@ -319,26 +321,27 @@ EMPTY_CHAR \'\'
 <STRING_STATE>{NEWLINE} {
 	lineCount++;
 	increaseErrorCount();
-	logString.append(newString);
-	fprintf(logout,"Error at the line no %d: Unterminated String %s\n\n",discoveryLine,logString.c_str());
+	// logString.append(newString);
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",discoveryLine,logString.c_str());
 	BEGIN INITIAL;
 	scannedString="";
 	logString="";
-}
-
-<STRING_STATE><<EOF>> {
-	increaseErrorCount();
-	fprintf(logout,"Error at the line no %d: Unterminated String %s\n\n",discoveryLine,logString.c_str());
-	BEGIN INITIAL;
-	scannedString="";
-	logString="";
-	endOfFile();
 }
 
 <STRING_STATE>. {
 	newString=yytext;
 	scannedString.append(newString);
 	logString.append(newString);
+}
+
+<STRING_STATE><<EOF>> {
+	increaseErrorCount();
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",discoveryLine,logString.c_str());
+	BEGIN INITIAL;
+	scannedString="";
+	logString="";
+	endOfFile();
+	return 0;
 }
 
 \/\/ {
@@ -366,17 +369,18 @@ EMPTY_CHAR \'\'
 	logString.append(newString);
 }
 
+<SINGLELINE_CMNT_STATE>. {
+	newString=yytext;
+	logString.append(newString);
+}
+
 <SINGLELINE_CMNT_STATE><<EOF>> {
 	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",discoveryLine,logString.c_str());
 	BEGIN INITIAL;
 	scannedString="";
 	logString="";
 	endOfFile();
-}
-
-<SINGLELINE_CMNT_STATE>. {
-	newString=yytext;
-	logString.append(newString);
+	return 0;
 }
 
 \/\* {
@@ -391,14 +395,28 @@ EMPTY_CHAR \'\'
 	newString=yytext;
 	logString.append(newString);
 	fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",discoveryLine,logString.c_str());
+	logString="";
+}
+
+<MULTILINE_CMNT_STATE>{NEWLINE} {
+	lineCount++;
+	newString=yytext;
+	logString.append(newString);
+}
+
+
+<MULTILINE_CMNT_STATE>. {
+	newString=yytext;
+	logString.append(newString);
 }
 
 <MULTILINE_CMNT_STATE><<EOF>> {
 	BEGIN INITIAL;
-	fprintf(logout,"Line no %d: Unterminated comment %s\n\n",discoveryLine,logString.c_str());
+	increaseErrorCount();
+	fprintf(logout,"Error at line no %d: Unterminated comment %s\n\n",discoveryLine,logString.c_str());
+	endOfFile();
+	return 0;
 }
-
-
 
 {ID} {
 	fprintf(tokenout,"<ID,%s> ",yytext);
@@ -430,11 +448,15 @@ EMPTY_CHAR \'\'
 	fprintf(logout,"Error at line no %d: Invalid prefix on ID or invalid suffix on Number %s\n\n",lineCount,yytext);
 }
 
+. {
+	increaseErrorCount();
+	fprintf(logout,"Error at line no %d: Unrecognized character %s\n\n",lineCount,yytext);
+}
 
-
-
-
-
+<<EOF>> {
+	endOfFile();
+	return 0;
+}
 
 
 %%
