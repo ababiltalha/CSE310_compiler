@@ -1,6 +1,7 @@
-#pragma once
+#ifndef SCOPE_TABLE_H
+#define SCOPE_TABLE_H
 #include<bits/stdc++.h>
-#include "SymbolInfo.cpp"
+#include "SymbolInfo.h"
 using namespace std;
 
 class ScopeTable
@@ -25,4 +26,4 @@ public:
     ScopeTable* getParentScope();
 };
 
-
+#endif

@@ -1,6 +1,7 @@
-#pragma once
+#ifndef SYMBOL_TABLE_H
+#define SYMBOL_TABLE_H
 #include<bits/stdc++.h>
-#include "ScopeTable.cpp"
+#include "ScopeTable.h"
 using namespace std;
 
 class SymbolTable
@@ -24,3 +25,4 @@ public:
 
 };
 
+#endif 

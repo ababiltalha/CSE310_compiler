@@ -1,5 +1,5 @@
 %{
-#include "SymbolTable.cpp"
+#include "SymbolTable.h"
 #define YYSTYPE SymbolInfo*
 
 using namespace std;
@@ -7,7 +7,7 @@ using namespace std;
 int yyparse(void);
 int yylex(void);
 extern FILE *yyin;
-FILE* fp, fp2, fp3;
+FILE *fp, *logout, *errorout;
 
 SymbolTable *table;
 
@@ -20,7 +20,7 @@ void yyerror(char *s)
 
 %}
 
-%token IF ELSE FOR WHILE INT FLOAT DOUBLE CHAR RETURN VOID MAIN PRINTLN ADDOP MULOP RELOP LOGICOP ASSIGNOP NOT SEMICOLON COMMA LPAREN RPAREN LCURL RCURL LTHIRD RTHIRD INCOP DECOP CONST_INT CONST_FLOAT ID
+%token IF ELSE FOR WHILE INT FLOAT DOUBLE CHAR RETURN VOID MAIN PRINTLN DO BREAK SWITCH CASE DEFAULT CONTINUE ADDOP MULOP RELOP LOGICOP ASSIGNOP NOT SEMICOLON COMMA LPAREN RPAREN LCURL RCURL LTHIRD RTHIRD INCOP DECOP CONST_INT CONST_FLOAT ID
 
 
 
@@ -84,7 +84,6 @@ statement : var_declaration
 	  | compound_statement
 	  | FOR LPAREN expression_statement expression_statement expression RPAREN statement
 	  | IF LPAREN expression RPAREN statement
-	  | IF LPAREN expression RPAREN statement ELSE statement
 	  | WHILE LPAREN expression RPAREN statement
 	  | PRINTLN LPAREN ID RPAREN SEMICOLON
 	  | RETURN expression SEMICOLON
@@ -150,21 +149,21 @@ int main(int argc,char *argv[])
 		exit(1);
 	}
 
-	fp2= fopen(argv[2],"w");
-	fclose(fp2);
-	fp3= fopen(argv[3],"w");
-	fclose(fp3);
+	logout= fopen(argv[2],"w");
+	fclose(logout);
+	errorout= fopen(argv[3],"w");
+	fclose(errorout);
 	
-	fp2= fopen(argv[2],"a");
-	fp3= fopen(argv[3],"a");
+	logout= fopen(argv[2],"a");
+	errorout= fopen(argv[3],"a");
 	
 
 	yyin=fp;
 	yyparse();
 	
 
-	fclose(fp2);
-	fclose(fp3);
+	fclose(logout);
+	fclose(errorout);
 	
 	return 0;
 }

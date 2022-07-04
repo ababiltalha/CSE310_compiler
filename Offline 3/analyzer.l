@@ -8,8 +8,11 @@
 
 
 %{
-#include "SymbolInfo.h"
+#include "SymbolInfo.cpp"
 #include "y.tab.h"
+
+// #define YYSTYPE SymbolInfo*
+extern YYSTYPE yylval;
 
 int lineCount=1;
 int wordCount=0;
@@ -21,11 +24,10 @@ string logString="";
 string newString="";
 
 
-FILE *logout;
+extern FILE *logout;
+extern FILE *errorout;
 FILE *tokenout;
 
-extern YYSTYPE yylval;
-extern SymbolTable *table;
 void yyerror(char *);
 
 void increaseWordCount(){
@@ -98,7 +100,7 @@ void detectUnknownWord(char *str){
 
 void endOfFile(){
 	string allScope;
-	allScope=symbolTable.printAllScope();
+	// allScope=table->printAllScope();
 	// fprintf(logout,"%s",allScope.c_str());
 	// fprintf(logout,"Total lines: %d\n",lineCount);
 	// fprintf(logout,"Total errors: %d\n",errorCount);
@@ -158,6 +160,7 @@ EMPTY_CHAR \'\'
 	// fprintf(tokenout,"<CONST_INT, %s> ", yytext);
 	// fprintf(logout,"Line no %d: Token <CONST_INT> Lexeme %s found\n\n",lineCount,yytext);
 	SymbolInfo *s= new  SymbolInfo(yytext, "CONST_INT");
+	s->getName();
 	yylval = (YYSTYPE)s;
 	return CONST_INT;
 }
