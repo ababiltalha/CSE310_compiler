@@ -1,9 +1,5 @@
 %{
-#include<iostream>
-#include<cstdlib>
-#include<cstring>
-#include<cmath>
-#include "symbol.h"
+#include "SymbolTable.cpp"
 #define YYSTYPE SymbolInfo*
 
 using namespace std;
@@ -11,6 +7,7 @@ using namespace std;
 int yyparse(void);
 int yylex(void);
 extern FILE *yyin;
+FILE* fp, fp2, fp3;
 
 SymbolTable *table;
 
@@ -23,12 +20,8 @@ void yyerror(char *s)
 
 %}
 
-%token IF ELSE FOR WHILE
+%token IF ELSE FOR WHILE INT FLOAT DOUBLE CHAR RETURN VOID MAIN PRINTLN ADDOP MULOP RELOP LOGICOP ASSIGNOP NOT SEMICOLON COMMA LPAREN RPAREN LCURL RCURL LTHIRD RTHIRD INCOP DECOP CONST_INT CONST_FLOAT ID
 
-%left 
-%right
-
-%nonassoc 
 
 
 %%

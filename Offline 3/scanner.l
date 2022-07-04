@@ -2,7 +2,7 @@
 #include<iostream>
 #include<stdlib.h>
 #include<string.h>
-#include "SymbolTable.h"
+// #include "SymbolTable.h"
 #include "SymbolInfo.h"
 #include "y.tab.h"
 
