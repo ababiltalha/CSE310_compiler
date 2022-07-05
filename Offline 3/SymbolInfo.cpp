@@ -1,3 +1,6 @@
+#ifndef SYMBOL_INFO_CPP
+#define SYMBOL_INFO_CPP
+
 #include "SymbolInfo.h"
 
 SymbolInfo::SymbolInfo(string name, string type)
@@ -39,3 +42,5 @@ ostream &operator<<(ostream &output, SymbolInfo &symbol){
     else output<<"Not found"<<endl;
     return output;
 }
+
+#endif

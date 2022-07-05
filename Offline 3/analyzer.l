@@ -8,7 +8,7 @@
 
 
 %{
-#include "SymbolInfo.cpp"
+#include "SymbolInfo.h"
 #include "y.tab.h"
 
 // #define YYSTYPE SymbolInfo*
@@ -154,14 +154,13 @@ EMPTY_CHAR \'\'
 "default" {return DEFAULT;}
 "continue" {return CONTINUE;}
 "main"	{return MAIN;}
-"println"	{return PRINTLN;}
+"printf"	{return PRINTLN;}
 
 {CONST_INT} {
 	// fprintf(tokenout,"<CONST_INT, %s> ", yytext);
 	// fprintf(logout,"Line no %d: Token <CONST_INT> Lexeme %s found\n\n",lineCount,yytext);
 	SymbolInfo *s= new  SymbolInfo(yytext, "CONST_INT");
-	s->getName();
-	yylval = (YYSTYPE)s;
+	yylval.symbol = s;
 	return CONST_INT;
 }
 
@@ -169,7 +168,7 @@ EMPTY_CHAR \'\'
 	// fprintf(tokenout,"<CONST_FLOAT, %s> ", yytext);
 	// fprintf(logout,"Line no %d: Token <CONST_FLOAT> Lexeme %s found\n\n",lineCount,yytext);
 	SymbolInfo *s= new  SymbolInfo(yytext, "CONST_FLOAT");
-	yylval = (YYSTYPE)s;
+	yylval.symbol = s;
 	return CONST_FLOAT;
 }
 
@@ -199,7 +198,7 @@ EMPTY_CHAR \'\'
 	// fprintf(tokenout,"<ADDOP,%s> ",yytext);
 	// fprintf(logout,"Line no %d: Token <ADDOP> Lexeme %s found\n\n",lineCount,yytext);
 	SymbolInfo *s= new  SymbolInfo(yytext, "ADDOP");
-	yylval = (YYSTYPE)s;
+	yylval.symbol = s;
 	return ADDOP;
 }
 
@@ -207,7 +206,7 @@ EMPTY_CHAR \'\'
 	// fprintf(tokenout,"<MULOP,%s> ",yytext);
 	// fprintf(logout,"Line no %d: Token <MULOP> Lexeme %s found\n\n",lineCount,yytext);
 	SymbolInfo *s= new  SymbolInfo(yytext, "MULOP");
-	yylval = (YYSTYPE)s;
+	yylval.symbol = s;
 	return MULOP;
 }
 
@@ -218,7 +217,7 @@ EMPTY_CHAR \'\'
 	// fprintf(tokenout,"<RELOP,%s> ",yytext);
 	// fprintf(logout,"Line no %d: Token <RELOP> Lexeme %s found\n\n",lineCount,yytext);
 	SymbolInfo *s= new  SymbolInfo(yytext, "RELOP");
-	yylval = (YYSTYPE)s;
+	yylval.symbol = s;
 	return RELOP;
 }
 
@@ -232,7 +231,7 @@ EMPTY_CHAR \'\'
 	// fprintf(tokenout,"<LOGICOP,%s> ",yytext);
 	// fprintf(logout,"Line no %d: Token <LOGICOP> Lexeme %s found\n\n",lineCount,yytext);
 	SymbolInfo *s= new  SymbolInfo(yytext, "LOGICOP");
-	yylval = (YYSTYPE)s;
+	yylval.symbol = s;
 	return LOGICOP;
 }
 
@@ -398,7 +397,10 @@ EMPTY_CHAR \'\'
 {ID} {
 	// fprintf(tokenout,"<ID,%s> ",yytext);
 	// fprintf(logout,"Line no %d: Token <ID> Lexeme %s found\n\n",lineCount,yytext);
-	
+	SymbolInfo *s= new  SymbolInfo(yytext, "ID");
+	// cout<<*s<<endl;
+	yylval.symbol = s;
+	return ID;
 }
 
 {TOO_MANY_DEC} {

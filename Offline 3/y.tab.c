@@ -69,8 +69,7 @@
 /* First part of user prologue.  */
 #line 1 "parser.y"
 
-#include "SymbolTable.h"
-#define YYSTYPE SymbolInfo*
+#include "SymbolTable.cpp"
 
 using namespace std;
 
@@ -78,8 +77,9 @@ int yyparse(void);
 int yylex(void);
 extern FILE *yyin;
 FILE *fp, *logout, *errorout;
+extern int lineCount;
 
-SymbolTable *table;
+SymbolTable table(30);
 
 
 void yyerror(char *s)
@@ -218,7 +218,16 @@ extern int yydebug;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
+union YYSTYPE
+{
+#line 23 "parser.y"
+
+	SymbolInfo* symbol;
+
+#line 228 "y.tab.c"
+
+};
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
@@ -688,13 +697,13 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    29,    29,    35,    36,    39,    40,    41,    44,    45,
-      48,    49,    53,    54,    55,    56,    60,    61,    64,    67,
-      68,    69,    72,    73,    74,    75,    78,    79,    82,    83,
-      84,    85,    86,    87,    88,    89,    92,    93,    96,    97,
-     100,   101,   104,   105,   108,   109,   112,   113,   116,   117,
-     120,   121,   122,   125,   126,   127,   128,   129,   130,   131,
-     134,   135,   138,   139
+       0,    32,    32,    38,    39,    42,    43,    44,    47,    48,
+      51,    52,    56,    57,    58,    62,    66,    67,    70,    77,
+      82,    87,    94,    99,   103,   108,   111,   112,   118,   119,
+     120,   121,   122,   123,   124,   125,   128,   129,   132,   133,
+     136,   137,   140,   141,   144,   145,   148,   149,   152,   153,
+     156,   157,   158,   161,   162,   163,   164,   165,   166,   167,
+     170,   171,   174,   175
 };
 #endif
 
@@ -1346,15 +1355,93 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* start: program  */
-#line 30 "parser.y"
+#line 33 "parser.y"
         {
 		//write your code in this block in all the similar blocks below
 	}
-#line 1354 "y.tab.c"
+#line 1363 "y.tab.c"
+    break;
+
+  case 14: /* parameter_list: type_specifier ID  */
+#line 59 "parser.y"
+                {
+
+		}
+#line 1371 "y.tab.c"
+    break;
+
+  case 18: /* var_declaration: type_specifier declaration_list SEMICOLON  */
+#line 71 "parser.y"
+                {
+			(yyval.symbol) = new SymbolInfo((yyvsp[-2].symbol)->getName()+" "+(yyvsp[-1].symbol)->getName()+";", "var_declaration");
+			fprintf(logout, "Line %d: var_declaration : type_specifier declaration_list SEMICOLON\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
+		}
+#line 1380 "y.tab.c"
+    break;
+
+  case 19: /* type_specifier: INT  */
+#line 78 "parser.y"
+                {
+			(yyval.symbol)= new SymbolInfo("int","INT");
+			fprintf(logout, "Line %d: type_specifier : INT\n\nint\n\n", lineCount);
+		}
+#line 1389 "y.tab.c"
+    break;
+
+  case 20: /* type_specifier: FLOAT  */
+#line 83 "parser.y"
+                {
+			(yyval.symbol)= new SymbolInfo("float","FLOAT");
+			fprintf(logout, "Line %d: type_specifier : FLOAT\n\nfloat\n\n", lineCount);
+		}
+#line 1398 "y.tab.c"
+    break;
+
+  case 21: /* type_specifier: VOID  */
+#line 88 "parser.y"
+                {
+			(yyval.symbol)= new SymbolInfo("void","VOID");
+			fprintf(logout, "Line %d: type_specifier : VOID\n\nvoid\n\n", lineCount);
+		}
+#line 1407 "y.tab.c"
+    break;
+
+  case 22: /* declaration_list: declaration_list COMMA ID  */
+#line 95 "parser.y"
+                  {
+			(yyval.symbol) = new SymbolInfo((yyvsp[-2].symbol)->getName()+","+(yyvsp[0].symbol)->getName(), "declaration_list");
+			fprintf(logout, "Line %d: declaration_list : declaration_list COMMA ID\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
+		  }
+#line 1416 "y.tab.c"
+    break;
+
+  case 23: /* declaration_list: declaration_list COMMA ID LTHIRD CONST_INT RTHIRD  */
+#line 100 "parser.y"
+                  {
+
+		  }
+#line 1424 "y.tab.c"
+    break;
+
+  case 24: /* declaration_list: ID  */
+#line 104 "parser.y"
+                  {
+			(yyval.symbol) = new SymbolInfo((yyvsp[0].symbol)->getName(), "declaration_list");
+			fprintf(logout, "Line %d: declaration_list : ID\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
+		  }
+#line 1433 "y.tab.c"
+    break;
+
+  case 27: /* statements: statements statement  */
+#line 113 "parser.y"
+           {
+
+	   }
+#line 1441 "y.tab.c"
     break;
 
 
-#line 1358 "y.tab.c"
+#line 1445 "y.tab.c"
 
       default: break;
     }
@@ -1547,7 +1634,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 142 "parser.y"
+#line 178 "parser.y"
 
 int main(int argc,char *argv[])
 {

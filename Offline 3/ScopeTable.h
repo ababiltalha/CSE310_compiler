@@ -1,7 +1,7 @@
 #ifndef SCOPE_TABLE_H
 #define SCOPE_TABLE_H
 #include<bits/stdc++.h>
-#include "SymbolInfo.h"
+#include "SymbolInfo.cpp"
 using namespace std;
 
 class ScopeTable

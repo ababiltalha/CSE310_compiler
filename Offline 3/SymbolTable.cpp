@@ -1,10 +1,13 @@
+#ifndef SYMBOL_TABLE_CPP
+#define SYMBOL_TABLE_CPP
+
 #include "SymbolTable.h"
 
 SymbolTable::SymbolTable(int bucket){
     this->bucket=bucket;
     this->globalId=0;
     this->currentScope=new ScopeTable(bucket, nullptr, ++this->globalId);
-    cout<<"SymbolTable with bucket size "+ to_string(bucket) +" created"<<endl;
+    // cout<<"SymbolTable with bucket size "+ to_string(bucket) +" created"<<endl;
 }
 
 SymbolTable::~SymbolTable(){
@@ -13,7 +16,7 @@ SymbolTable::~SymbolTable(){
         delete this->currentScope;
         this->currentScope=parent;
     }
-    cout<<"\n\nSymbolTable closed\n"<<endl;
+    // cout<<"\n\nSymbolTable closed\n"<<endl;
 }
 
 void SymbolTable::enterScope(){
@@ -93,3 +96,5 @@ string SymbolTable::printAllScope(){
     }
     return str;
 }
+
+#endif

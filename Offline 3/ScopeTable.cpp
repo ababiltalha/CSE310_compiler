@@ -1,3 +1,6 @@
+#ifndef SCOPE_TABLE_CPP
+#define SCOPE_TABLE_CPP
+
 #include "ScopeTable.h"
 
 ScopeTable::ScopeTable(int bucket, ScopeTable* parent, int globalId){
@@ -30,7 +33,7 @@ ScopeTable::~ScopeTable(){
         }
     }
     delete[] this->hashTable;
-    cout<<"\nDestroying the ScopeTable"<<endl;
+    // cout<<"\nDestroying the ScopeTable"<<endl;
 }
 
 uint32_t ScopeTable::hashFunction(string name){
@@ -144,3 +147,5 @@ int ScopeTable::getInnerScopeCount(){
 ScopeTable* ScopeTable::getParentScope(){
     return this->parentScope;
 }
+
+#endif
