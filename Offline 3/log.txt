@@ -18,6 +18,16 @@ Line 1: var_declaration : type_specifier declaration_list SEMICOLON
 
 int x,y,z;
 
+Line 1: unit : var_declaration
+
+int x,y,z;
+
+
+Line 1: program : unit
+
+int x,y,z;
+
+
 Line 1: type_specifier : FLOAT
 
 float
@@ -30,10 +40,38 @@ Line 1: var_declaration : type_specifier declaration_list SEMICOLON
 
 float a;
 
+Line 1: unit : var_declaration
+
+float a;
+
+
+Line 1: program : program unit
+
+int x,y,z;
+float a;
+
+
 Line 3: type_specifier : VOID
 
 void
 
+Line 3: func_declaration : type_specifier ID LPAREN RPAREN SEMICOLON
+
+void foo();
+
+
+Line 3: unit : func_declaration
+
+void foo();
+
+
+Line 3: program : program unit
+
+int x,y,z;
+float a;
+void foo();
+
+
 Line 5: type_specifier : INT
 
 int
@@ -42,15 +80,106 @@ Line 5: type_specifier : INT
 
 int
 
+Line 5: parameter_list : type_specifier ID
+
+int a
+
 Line 5: type_specifier : INT
 
 int
+
+Line 5: parameter_list : parameter_list COMMA type_specifier ID
+
+int a,int b
+
+Line 7: unit : func_definition
+
+int
+
+
+Line 7: program : program unit
+
+int x,y,z;
+float a;
+void foo();
+int
+
 
 Line 9: type_specifier : VOID
 
 void
 
+Line 12: unit : func_definition
+
+void
+
+
+Line 12: program : program unit
+
+int x,y,z;
+float a;
+void foo();
+int
+void
+
+
 Line 14: type_specifier : INT
 
 int
 
+Line 15: type_specifier : INT
+
+int
+
+Line 15: declaration_list : declaration_list COMMA ID
+
+a,c
+
+Line 15: declaration_list : declaration_list COMMA ID
+
+a,c,i
+
+Line 15: declaration_list : declaration_list COMMA ID
+
+a,c,i,j
+
+Line 15: var_declaration : type_specifier declaration_list SEMICOLON
+
+int a,c,i,j;
+
+Line 15: type_specifier : FLOAT
+
+float
+
+Line 15: declaration_list : ID
+
+d
+
+Line 15: var_declaration : type_specifier declaration_list SEMICOLON
+
+float d;
+
+Line 22: unit : func_definition
+
+int
+
+
+Line 22: program : program unit
+
+int x,y,z;
+float a;
+void foo();
+int
+void
+int
+
+
+Line 23: start : program
+
+
+ScopeTable # 1
+0 --> < foo : FUNCTION >
+
+
+Total lines: 23
+Total errors: 0

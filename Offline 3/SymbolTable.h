@@ -22,6 +22,8 @@ public:
     void printCurrentScope(); // P C
     string printAllScope(); // P A
 
+    bool insertSymbolInfo(SymbolInfo* s); 
+
 
 };
 

@@ -2,6 +2,7 @@
 #define SCOPE_TABLE_H
 #include<bits/stdc++.h>
 #include "SymbolInfo.cpp"
+#include "FunctionInfo.cpp"
 using namespace std;
 
 class ScopeTable
@@ -24,6 +25,8 @@ public:
     string getId();
     int getInnerScopeCount();
     ScopeTable* getParentScope();
+
+    bool insertSymbolInfo(SymbolInfo* s);
 };
 
 #endif

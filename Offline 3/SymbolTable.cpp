@@ -49,6 +49,13 @@ bool SymbolTable::insertSymbol(string name, string type){
     return this->currentScope->insertSymbol(name, type);
 }
 
+bool SymbolTable::insertSymbolInfo(SymbolInfo* s){
+    if(this->currentScope==nullptr){
+        this->currentScope= new ScopeTable(this->bucket, nullptr, ++this->globalId);
+    }
+    return this->currentScope->insertSymbolInfo(s);
+}
+
 bool SymbolTable::removeSymbol(string name){
     // if(this->lookUpSymbol(name))
     if(this->currentScope==nullptr){
@@ -57,7 +64,7 @@ bool SymbolTable::removeSymbol(string name){
     }
     return this->currentScope->deleteSymbol(name);
 }
-// have to implement lookup including the parent scopes
+
 SymbolInfo* SymbolTable::lookUpSymbol(string name){
     // if(this->currentScope==nullptr){
     //     cout<<"No current scope";
@@ -72,7 +79,7 @@ SymbolInfo* SymbolTable::lookUpSymbol(string name){
         }
         else return searchResult;
     }
-    cout<<"Not found";
+    // cout<<"Not found";
     return nullptr;
 
     // return this->currentScope->lookupSymbol(name);

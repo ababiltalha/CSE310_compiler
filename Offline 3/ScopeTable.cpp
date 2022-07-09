@@ -69,6 +69,33 @@ bool ScopeTable::insertSymbol(string name, string type){
     return true;
 }
 
+bool ScopeTable::insertSymbolInfo(SymbolInfo* s){
+    int position=0;
+    int hashVal=hashFunction(s->getName());
+    SymbolInfo* current=this->hashTable[hashVal];
+    if(current==nullptr){
+        this->hashTable[hashVal]=s;
+        // cout<<"Inserted at ScopeTable id# "<<this->id<<" at position "<<hashVal<<", "<<position;
+        return true;
+    }
+    while(current->getNext()!=nullptr){
+        if(current->getName()==s->getName()) {
+            // cout<<"< "<<name<<" : "<<type<<"> already exists in current ScopeTable";
+            return false;
+        }
+        current=current->getNext();
+        position++;
+    }
+    if(current->getName()==s->getName()) {
+        // cout<<"< "<<name<<" : "<<type<<"> already exists in current ScopeTable";
+        return false;
+    }
+    current->setNext(s);
+    // cout<<"Inserted at Scope "<<this->id<<" at position "<<hashVal<<", "<<++position;
+    return true;
+
+}
+
 bool ScopeTable::deleteSymbol(string name){
     int position=0;
     int hashVal=hashFunction(name);
@@ -106,7 +133,7 @@ SymbolInfo* ScopeTable::lookupSymbol(string name){
     SymbolInfo* current=this->hashTable[hashVal];
     while(current!=nullptr){
         if(current->getName()==name) {
-            cout<<"Found in ScopeTable# "<<this->id<<" at position "<<hashVal<<", "<<position;
+            // cout<<"Found in ScopeTable# "<<this->id<<" at position "<<hashVal<<", "<<position;
             return current;
         }
         current=current->getNext();

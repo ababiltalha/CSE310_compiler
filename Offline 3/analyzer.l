@@ -153,7 +153,6 @@ EMPTY_CHAR \'\'
 "case" {return CASE;}
 "default" {return DEFAULT;}
 "continue" {return CONTINUE;}
-"main"	{return MAIN;}
 "printf"	{return PRINTLN;}
 
 {CONST_INT} {
@@ -243,7 +242,7 @@ EMPTY_CHAR \'\'
 
 ";" 	{ return SEMICOLON;}
 "," 	{return COMMA;}
-"(" 	{return LPAREN;}
+"(" 	{return LPAREN;cout<<"a"<<endl;}
 ")" 	{return RPAREN;}
 {LCURL} {return LCURL;}
 {RCURL} {return RCURL;}
@@ -405,12 +404,14 @@ EMPTY_CHAR \'\'
 
 {TOO_MANY_DEC} {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Too many decimal points %s\n\n",lineCount,yytext);
+	fprintf(errorout,"Error at line no %d: Too many decimal points %s\n\n",lineCount,yytext);
+	return CONST_FLOAT;
 }
 
 {ILL_FORM_NUM} {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Ill formed number %s\n\n",lineCount,yytext);
+	fprintf(errorout,"Error at line no %d: Ill formed number %s\n\n",lineCount,yytext);
+	return CONST_FLOAT;
 }
 
 {INVALID_NUM_ID} {
