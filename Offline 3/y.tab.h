@@ -64,34 +64,33 @@ extern int yydebug;
     CHAR = 265,                    /* CHAR  */
     RETURN = 266,                  /* RETURN  */
     VOID = 267,                    /* VOID  */
-    MAIN = 268,                    /* MAIN  */
-    PRINTLN = 269,                 /* PRINTLN  */
-    DO = 270,                      /* DO  */
-    BREAK = 271,                   /* BREAK  */
-    SWITCH = 272,                  /* SWITCH  */
-    CASE = 273,                    /* CASE  */
-    DEFAULT = 274,                 /* DEFAULT  */
-    CONTINUE = 275,                /* CONTINUE  */
-    ASSIGNOP = 276,                /* ASSIGNOP  */
-    NOT = 277,                     /* NOT  */
-    SEMICOLON = 278,               /* SEMICOLON  */
-    COMMA = 279,                   /* COMMA  */
-    LPAREN = 280,                  /* LPAREN  */
-    RPAREN = 281,                  /* RPAREN  */
-    LCURL = 282,                   /* LCURL  */
-    RCURL = 283,                   /* RCURL  */
-    LTHIRD = 284,                  /* LTHIRD  */
-    RTHIRD = 285,                  /* RTHIRD  */
-    INCOP = 286,                   /* INCOP  */
-    DECOP = 287,                   /* DECOP  */
-    ID = 288,                      /* ID  */
-    ADDOP = 289,                   /* ADDOP  */
-    MULOP = 290,                   /* MULOP  */
-    RELOP = 291,                   /* RELOP  */
-    LOGICOP = 292,                 /* LOGICOP  */
-    CONST_INT = 293,               /* CONST_INT  */
-    CONST_FLOAT = 294,             /* CONST_FLOAT  */
-    LESS_PREC_THAN_ELSE = 295      /* LESS_PREC_THAN_ELSE  */
+    PRINTLN = 268,                 /* PRINTLN  */
+    DO = 269,                      /* DO  */
+    BREAK = 270,                   /* BREAK  */
+    SWITCH = 271,                  /* SWITCH  */
+    CASE = 272,                    /* CASE  */
+    DEFAULT = 273,                 /* DEFAULT  */
+    CONTINUE = 274,                /* CONTINUE  */
+    ASSIGNOP = 275,                /* ASSIGNOP  */
+    NOT = 276,                     /* NOT  */
+    SEMICOLON = 277,               /* SEMICOLON  */
+    COMMA = 278,                   /* COMMA  */
+    LPAREN = 279,                  /* LPAREN  */
+    RPAREN = 280,                  /* RPAREN  */
+    LCURL = 281,                   /* LCURL  */
+    RCURL = 282,                   /* RCURL  */
+    LTHIRD = 283,                  /* LTHIRD  */
+    RTHIRD = 284,                  /* RTHIRD  */
+    INCOP = 285,                   /* INCOP  */
+    DECOP = 286,                   /* DECOP  */
+    ID = 287,                      /* ID  */
+    ADDOP = 288,                   /* ADDOP  */
+    MULOP = 289,                   /* MULOP  */
+    RELOP = 290,                   /* RELOP  */
+    LOGICOP = 291,                 /* LOGICOP  */
+    CONST_INT = 292,               /* CONST_INT  */
+    CONST_FLOAT = 293,             /* CONST_FLOAT  */
+    LESS_PREC_THAN_ELSE = 294      /* LESS_PREC_THAN_ELSE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -110,44 +109,43 @@ extern int yydebug;
 #define CHAR 265
 #define RETURN 266
 #define VOID 267
-#define MAIN 268
-#define PRINTLN 269
-#define DO 270
-#define BREAK 271
-#define SWITCH 272
-#define CASE 273
-#define DEFAULT 274
-#define CONTINUE 275
-#define ASSIGNOP 276
-#define NOT 277
-#define SEMICOLON 278
-#define COMMA 279
-#define LPAREN 280
-#define RPAREN 281
-#define LCURL 282
-#define RCURL 283
-#define LTHIRD 284
-#define RTHIRD 285
-#define INCOP 286
-#define DECOP 287
-#define ID 288
-#define ADDOP 289
-#define MULOP 290
-#define RELOP 291
-#define LOGICOP 292
-#define CONST_INT 293
-#define CONST_FLOAT 294
-#define LESS_PREC_THAN_ELSE 295
+#define PRINTLN 268
+#define DO 269
+#define BREAK 270
+#define SWITCH 271
+#define CASE 272
+#define DEFAULT 273
+#define CONTINUE 274
+#define ASSIGNOP 275
+#define NOT 276
+#define SEMICOLON 277
+#define COMMA 278
+#define LPAREN 279
+#define RPAREN 280
+#define LCURL 281
+#define RCURL 282
+#define LTHIRD 283
+#define RTHIRD 284
+#define INCOP 285
+#define DECOP 286
+#define ID 287
+#define ADDOP 288
+#define MULOP 289
+#define RELOP 290
+#define LOGICOP 291
+#define CONST_INT 292
+#define CONST_FLOAT 293
+#define LESS_PREC_THAN_ELSE 294
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 25 "parser.y"
+#line 44 "parser.y"
 
 	SymbolInfo* symbol;
 
-#line 151 "y.tab.h"
+#line 149 "y.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

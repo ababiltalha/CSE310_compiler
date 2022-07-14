@@ -329,8 +329,7 @@ variable : ID
 			fprintf(logout, "Error at line %d: Undeclared variable %s\n\n", lineCount, $1->getName().c_str());
 			$$ = new SymbolInfo($1->getName(),"variable");
 		}
-		else $$ = new SymbolInfo(temp->getName(), temp->getType());
-		// cout<<lineCount<<$$->getType()<<endl;;
+		else $$=temp;
 		fprintf(logout, "Line %d: variable : ID\n\n%s\n\n", lineCount, $$->getName().c_str());
 		delete $1;
 	 }
@@ -386,7 +385,6 @@ expression : logic_expression
 				else if (varType=="float" && exprType=="int") ;
 				else {
 					errorCount++;
-					// cout<<varType<<" "<<exprType<<endl;
 					fprintf(errorout, "Error at line %d: Type Mismatch\n\n", lineCount);
 					fprintf(logout, "Error at line %d: Type Mismatch\n\n", lineCount);
 				}
@@ -439,14 +437,11 @@ simple_expression : term
 		{
 			//handle int addition and float addition
 			string exprType;
-			// cout<<lineCount<<$1->getType()<<endl;
-			// cout<<lineCount<<$3->getType()<<endl;
-			if(($1->getType()=="int") && ($3->getType()=="int")) exprType= "int"; 
+			if(($1->getType()=="int") && ($2->getType()=="int")) exprType= "int"; 
 			else exprType= "float";
 
 			$$ = new SymbolInfo("", exprType);
 			$$->setName($1->getName()+$2->getName()+$3->getName());
-			// cout<<lineCount<<$$->getType()<<endl;
 			fprintf(logout, "Line %d: simple_expression : simple_expression ADDOP term\n\n%s\n\n", lineCount, $$->getName().c_str());
 			delete $1;
 			delete $2;

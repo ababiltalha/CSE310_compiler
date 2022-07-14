@@ -158,7 +158,7 @@ EMPTY_CHAR \'\'
 {CONST_INT} {
 	// fprintf(tokenout,"<CONST_INT, %s> ", yytext);
 	// fprintf(logout,"Line no %d: Token <CONST_INT> Lexeme %s found\n\n",lineCount,yytext);
-	SymbolInfo *s= new  SymbolInfo(yytext, "CONST_INT");
+	SymbolInfo *s= new  SymbolInfo(yytext, "int");
 	yylval.symbol = s;
 	return CONST_INT;
 }
@@ -166,7 +166,7 @@ EMPTY_CHAR \'\'
 {CONST_FLOAT} {
 	// fprintf(tokenout,"<CONST_FLOAT, %s> ", yytext);
 	// fprintf(logout,"Line no %d: Token <CONST_FLOAT> Lexeme %s found\n\n",lineCount,yytext);
-	SymbolInfo *s= new  SymbolInfo(yytext, "CONST_FLOAT");
+	SymbolInfo *s= new  SymbolInfo(yytext, "float");
 	yylval.symbol = s;
 	return CONST_FLOAT;
 }

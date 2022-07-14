@@ -155,7 +155,7 @@ string ScopeTable::print(){
         while(current!=nullptr){
             // cout<<endl<<i<<" --> ";
             // cout<<*current;
-            str+="< "+current->getName()+" : "+current->getType()+" >";
+            str+="< "+current->getName()+" : ID >";
             current=current->getNext();
         }
     }
