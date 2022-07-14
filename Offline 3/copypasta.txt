@@ -64,3 +64,5 @@ variable : ID
 		delete $3;
 	 }
 	 ;
+
+$$ = new SymbolInfo($1->getName()+$2->getName()+$3->getName(),"int");

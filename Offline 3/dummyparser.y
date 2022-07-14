@@ -12,6 +12,8 @@ extern int errorCount;
 
 SymbolTable table(30);
 vector<string> v;
+vector<string> parameterTypeList;
+vector<string> parameterNameList;
 
 void split(const string s, char delim) {
     stringstream ss(s);
@@ -28,14 +30,54 @@ string getArrayName(const string s){
 		return item;
 }
 
+void splitParameterTypeList(const string s, char delim) {
+    stringstream ss(s);
+    string item;
+    while(getline(ss, item, delim)) {
+        parameterTypeList.push_back(item);
+    }
+}
+
+void extractParameterNameList(const string s, char delim) {
+    bool flag;
+    stringstream ss(s);
+    string item;
+    while(getline(ss, item, delim)) {
+        flag=true;
+        stringstream ss2(item);
+		string paramName;
+		if(getline(ss2, paramName, ' ')) {}
+        if(getline(ss2, paramName, ' ')) {
+            for(string str : parameterNameList){
+                if(paramName==str){
+                    // multiple parameter same error
+					errorCount++;
+					fprintf(errorout, "Error at line %d: Multiple declaration of %s in parameter\n\n", lineCount, paramName.c_str());
+					fprintf(logout, "Error at line %d: Multiple declaration of %s in parameter\n\n", lineCount, paramName.c_str());
+                    flag=false;
+                }
+            }
+			// if(flag)
+				parameterNameList.push_back(paramName);
+		}
+    }
+}
+
 void clearVector() {
 	v.clear();
 }
 
+void clearParameterTypeList() {
+	parameterTypeList.clear();
+}
+
+void clearParameterNameList() {
+	parameterNameList.clear();
+}
 
 void yyerror(char *s)
 {
-	printf("error\n");
+	printf("Line %d: error\n", lineCount);
 }
 
 
@@ -91,6 +133,31 @@ unit : var_declaration
      ;
      
 func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON
+		{
+			string returnType = $1->getName();
+			string funcName = $2->getName();
+			SymbolInfo* temp = table.lookUpSymbol(funcName);
+			if (temp!=nullptr)
+			{
+				errorCount++;
+				fprintf(errorout, "Error at line %d: Multiple declaration of function %s\n\n", lineCount, funcName.c_str());
+				fprintf(logout, "Error at line %d: Multiple declaration of function %s\n\n", lineCount, funcName.c_str());
+			}
+			else {
+				splitParameterTypeList($4->getType(), ',');
+
+
+				FunctionInfo* f= new FunctionInfo(funcName, returnType);
+				for(string parameterType : parameterTypeList)
+					f->addParameter(parameterType);
+				table.insertSymbolInfo(f);
+				clearParameterTypeList();
+			}
+			$$ = new SymbolInfo($1->getName()+" "+$2->getName()+"("+$4->getName()+");","func_declaration");
+			fprintf(logout, "Line %d: func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON\n\n%s\n\n\n", lineCount, $$->getName().c_str());
+			delete $1;
+			delete $2;
+		}
 		| type_specifier ID LPAREN RPAREN SEMICOLON
 		{
 			string returnType = $1->getName();
@@ -114,23 +181,142 @@ func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON
 		;
 		 
 func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
+		{
+			string returnType = $1->getName();
+			string funcName = $2->getName();
+			splitParameterTypeList($4->getType(), ',');
+			for (int i = 0; i < parameterTypeList.size(); i++)
+        		cout<<parameterTypeList[i]<<endl;
+			extractParameterNameList($4->getName(),',');
+			for (int i = 0; i < parameterNameList.size(); i++)
+        		cout<<parameterNameList[i]<<endl;
+			SymbolInfo* temp = table.lookUpSymbol(funcName);
+			if (temp!=nullptr) // exists in symboltable, may or may not be func, decl or defn
+			{
+				cout<<temp->getType()<<endl;
+				
+				if (temp->getType()=="FUNCTION"){
+					FunctionInfo* ftemp=(FunctionInfo*) temp;
+					if(ftemp->getDefined()){
+						errorCount++;
+						fprintf(errorout, "Error at line %d: Multiple definition of function %s\n\n", lineCount, funcName.c_str());
+						fprintf(logout, "Error at line %d: Multiple definition of function %s\n\n", lineCount, funcName.c_str());
+					}
+					else { // decl but not defn, working case
+						// return type matching
+						if (ftemp->getReturnType() != returnType) {
+							errorCount++;
+							fprintf(errorout, "Error at line %d: Return type mismatch with declaration in function %s\n\n", lineCount, funcName.c_str());
+							fprintf(logout, "Error at line %d: Return type mismatch with declaration in function %s\n\n", lineCount, funcName.c_str());
+						}
+						// total number of arguments mismatch
+						if ((ftemp->getParameterTypeList().size() != parameterTypeList.size()) || (ftemp->getParameterTypeList().size())) {
+							errorCount++;
+							fprintf(errorout, "Error at line %d: Total number of arguments with declaration mismatch in function %s\n\n", lineCount, funcName.c_str());
+							fprintf(logout, "Error at line %d: Total number of arguments with declaration mismatch in function %s\n\n", lineCount, funcName.c_str());
+						}
+						else {
+							for(int i=0; i<ftemp->getParameterTypeList().size(); i++){
+								if (ftemp->getParameterTypeList()[i] != parameterTypeList[i]){
+									errorCount++;
+									fprintf(errorout, "Error at line %d: %dth parameter mismatch with declaration in function %s\n\n", lineCount, i, funcName.c_str());
+									fprintf(logout, "Error at line %d: %dth parameter mismatch with declaration in function %s\n\n", lineCount, i, funcName.c_str());
+								}
+							}
+
+						}
+						ftemp->setDefined(true);
+						
+					}
+				}
+				else { // not a function 
+					errorCount++;
+					fprintf(errorout, "Error at line %d: Multiple definition of variable %s as function\n\n", lineCount, funcName.c_str());
+					fprintf(logout, "Error at line %d: Multiple definition of variable %s as function\n\n", lineCount, funcName.c_str());
+				}
+			}
+			else { // not in symboltable
+				FunctionInfo* f= new FunctionInfo(funcName, returnType);
+				for(string parameterType : parameterTypeList)
+					f->addParameter(parameterType);
+				f->setDefined(true);
+				table.insertSymbolInfo(f);
+			}
+			$$ = new SymbolInfo($1->getName()+" "+$2->getName()+"("+$4->getName()+")"+$6->getName(),"func_definition");
+			fprintf(logout, "Line %d: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement\n\n%s\n\n\n", lineCount, $$->getName().c_str());
+			delete $1;
+			delete $2;
+			delete $4;
+			delete $6;
+		}
 		| type_specifier ID LPAREN RPAREN compound_statement
+		{
+			string returnType = $1->getName();
+			string funcName = $2->getName();
+			
+			SymbolInfo* temp = table.lookUpSymbol(funcName);
+			if (temp!=nullptr) // exists in symboltable, may or may not be func, decl or defn
+			{
+				cout<<temp->getType()<<endl;
+				
+				if (temp->getType()=="FUNCTION"){
+					FunctionInfo* ftemp=(FunctionInfo*) temp;
+					if(ftemp->getDefined()){
+						errorCount++;
+						fprintf(errorout, "Error at line %d: Multiple definition of function %s\n\n", lineCount, funcName.c_str());
+						fprintf(logout, "Error at line %d: Multiple definition of function %s\n\n", lineCount, funcName.c_str());
+					}
+					else { // decl but not defn, working case
+						// return type matching
+						if (ftemp->getReturnType() != returnType) {
+							errorCount++;
+							fprintf(errorout, "Error at line %d: Return type mismatch with declaration in function %s\n\n", lineCount, funcName.c_str());
+							fprintf(logout, "Error at line %d: Return type mismatch with declaration in function %s\n\n", lineCount, funcName.c_str());
+						}
+						// total number of arguments mismatch
+						if ((ftemp->getParameterTypeList().size() != 0)) {
+							errorCount++;
+							fprintf(errorout, "Error at line %d: Total number of arguments with declaration mismatch in function %s\n\n", lineCount, funcName.c_str());
+							fprintf(logout, "Error at line %d: Total number of arguments with declaration mismatch in function %s\n\n", lineCount, funcName.c_str());
+						}
+						
+						ftemp->setDefined(true);
+						
+					}
+				}
+				else { // not a function 
+					errorCount++;
+					fprintf(errorout, "Error at line %d: Multiple definition of variable %s as function\n\n", lineCount, funcName.c_str());
+					fprintf(logout, "Error at line %d: Multiple definition of variable %s as function\n\n", lineCount, funcName.c_str());
+				}
+			}
+			else { // not in symboltable
+				FunctionInfo* f= new FunctionInfo(funcName, returnType);
+				f->setDefined(true);
+				table.insertSymbolInfo(f);
+			}
+			$$ = new SymbolInfo($1->getName()+" "+$2->getName()+"()"+$5->getName(),"func_definition");
+			fprintf(logout, "Line %d: func_definition : type_specifier ID LPAREN RPAREN compound_statement\n\n%s\n\n\n", lineCount, $$->getName().c_str());
+			delete $1;
+			delete $2;
+			delete $5;
+		}
  		;				
 
 
 parameter_list  : parameter_list COMMA type_specifier ID
 		{
-			$$ = new SymbolInfo($1->getName() + "," + $3->getName() + " " + $4->getName(), "parameter_list");
+			$$ = new SymbolInfo($1->getName() + "," + $3->getName() + " " + $4->getName(), $1->getType() + "," + $3->getType());
 			fprintf(logout, "Line %d: parameter_list : parameter_list COMMA type_specifier ID\n\n%s\n\n",  lineCount, $$->getName().c_str());
 		}
 		| parameter_list COMMA type_specifier
 		{
-			$$ = new SymbolInfo($1->getName() + "," + $3->getName(), "parameter_list");
+			$$ = new SymbolInfo($1->getName() + "," + $3->getName(), $1->getType() + "," + $3->getType());
 			fprintf(logout, "Line %d: parameter_list : parameter_list COMMA type_specifier\n\n%s\n\n",  lineCount, $$->getName().c_str());
 		}
 		| type_specifier ID
 		{
-			$$ = new SymbolInfo($1->getName() + " " + $2->getName(), "parameter_list");
+			$$ = new SymbolInfo($1->getName() + " " + $2->getName(), $1->getType());
 			fprintf(logout, "Line %d: parameter_list : type_specifier ID\n\n%s\n\n",  lineCount, $$->getName().c_str());
 		}
 		| type_specifier
@@ -144,15 +330,33 @@ parameter_list  : parameter_list COMMA type_specifier ID
 compound_statement : LCURL enter_scope statements RCURL
 			{
 				
+
+				$$ = new SymbolInfo("{\n"+$3->getName()+"\n}","compound_statement");
+				fprintf(logout, "Line %d: compound_statement : LCURL statements RCURL\n\n%s\n\n",  lineCount, $$->getName().c_str());
+
+				fprintf(logout, "\n\n%s\n\n", table.printAllScope().c_str());
+				table.exitScope();
+				
 			}
  		    | LCURL enter_scope RCURL
 			{
+				$$ = new SymbolInfo("{\n}","compound_statement");
+				fprintf(logout, "Line %d: compound_statement : LCURL RCURL\n\n%s\n\n",  lineCount, $$->getName().c_str());
 
+				// fprintf(logout, "\n\n%s\n\n", table.printAllScope().c_str());
+				table.exitScope();
 			};
 
 enter_scope :
 			{
 				table.enterScope();
+				if(parameterTypeList.size()>0){
+					for(int i=0; i<parameterTypeList.size(); i++){
+						table.insertSymbol(parameterNameList[i], parameterTypeList[i]);
+					}
+				}
+				clearParameterNameList();
+				clearParameterTypeList();
 			}
  		    ;
  		    
@@ -206,17 +410,17 @@ var_declaration : type_specifier declaration_list SEMICOLON
  		 
 type_specifier	: INT
 		{
-			$$= new SymbolInfo("int","INT");
+			$$= new SymbolInfo("int","int");
 			fprintf(logout, "Line %d: type_specifier : INT\n\nint\n\n", lineCount);
 		}
  		| FLOAT
 		{
-			$$= new SymbolInfo("float","FLOAT");
+			$$= new SymbolInfo("float","float");
 			fprintf(logout, "Line %d: type_specifier : FLOAT\n\nfloat\n\n", lineCount);
 		}
  		| VOID
 		{
-			$$= new SymbolInfo("void","VOID");
+			$$= new SymbolInfo("void","void");
 			fprintf(logout, "Line %d: type_specifier : VOID\n\nvoid\n\n", lineCount);
 		}
  		;
@@ -282,28 +486,63 @@ statement : var_declaration
 	  }
 	  | FOR LPAREN expression_statement expression_statement expression RPAREN statement
 	  {
-		
+		$$ = new SymbolInfo("for("+$3->getName()+$4->getName()+$5->getName()+")"+$7->getName(), "statement");
+		fprintf(logout, "Line %d: statement : FOR LPAREN expression_statement expression_statement expression RPAREN statement\n\n%s\n\n", lineCount, $$->getName().c_str());
+		delete $3;
+		delete $4;
+		delete $5;
+		delete $7;
 	  }
 	  | IF LPAREN expression RPAREN statement %prec LESS_PREC_THAN_ELSE
 	  {
-
+		$$ = new SymbolInfo("if("+$3->getName()+")"+$5->getName(), "statement");
+		fprintf(logout, "Line %d: statement : IF LPAREN expression RPAREN statement\n\n%s\n\n", lineCount, $$->getName().c_str());
+		delete $3;
+		delete $5;
 	  }
 	  | IF LPAREN expression RPAREN statement ELSE statement
 	  {
-
+		$$ = new SymbolInfo("if("+$3->getName()+")"+$5->getName()+ "else"+$7->getName(), "statement");
+		fprintf(logout, "Line %d: statement : IF LPAREN expression RPAREN statement ELSE statement\n\n%s\n\n", lineCount, $$->getName().c_str());
+		delete $3;
+		delete $5;
+		delete $7;
 	  }
 
 	  | WHILE LPAREN expression RPAREN statement
 	  {
-
+		$$ = new SymbolInfo("while("+$3->getName()+")"+$5->getName(), "statement");
+		fprintf(logout, "Line %d: statement : WHILE LPAREN expression RPAREN statement\n\n%s\n\n", lineCount, $$->getName().c_str());
+		delete $3;
+		delete $5;
 	  }
 	  | PRINTLN LPAREN ID RPAREN SEMICOLON
 	  {
-
+		SymbolInfo *temp = table.lookUpSymbol($3->getName());
+		//handle undeclared variable error
+		if(temp==nullptr){
+			errorCount++;
+			fprintf(errorout, "Error at line %d: Undeclared variable %s\n\n", lineCount, $3->getName().c_str());
+			fprintf(logout, "Error at line %d: Undeclared variable %s\n\n", lineCount, $3->getName().c_str());
+			$$ = new SymbolInfo($3->getName(),"variable");
+		}
+		else $$ = new SymbolInfo(temp->getName(), temp->getType());
+		fprintf(logout, "Line %d: statement : PRINTLN LPAREN ID RPAREN SEMICOLON\n\n%s\n\n", lineCount, $$->getName().c_str());
+		delete $3;
+		delete temp;
 	  }
 	  | RETURN expression SEMICOLON
 	  {
-
+		// check return type in func_defn and decl
+		if($2->getType()=="expression") {
+			errorCount++;
+			fprintf(errorout, "Error at line %d: Assignment expression does not have a return type\n\n", lineCount);
+			fprintf(logout, "Error at line %d: Assignment expression does not have a return type\n\n", lineCount);
+		}
+		
+		$$ = new SymbolInfo("return "+$2->getName()+";", "statement");
+		fprintf(logout, "Line %d: statement : RETURN expression SEMICOLON\n\n%s\n\n", lineCount, $$->getName().c_str());
+		delete $2;
 	  }
 	  ;
 	  
@@ -329,7 +568,8 @@ variable : ID
 			fprintf(logout, "Error at line %d: Undeclared variable %s\n\n", lineCount, $1->getName().c_str());
 			$$ = new SymbolInfo($1->getName(),"variable");
 		}
-		else $$=temp;
+		else $$ = new SymbolInfo(temp->getName(), temp->getType());
+		// cout<<lineCount<<$$->getType()<<endl;;
 		fprintf(logout, "Line %d: variable : ID\n\n%s\n\n", lineCount, $$->getName().c_str());
 		delete $1;
 	 }
@@ -385,6 +625,7 @@ expression : logic_expression
 				else if (varType=="float" && exprType=="int") ;
 				else {
 					errorCount++;
+					// cout<<varType<<" "<<exprType<<endl;
 					fprintf(errorout, "Error at line %d: Type Mismatch\n\n", lineCount);
 					fprintf(logout, "Error at line %d: Type Mismatch\n\n", lineCount);
 				}
@@ -437,11 +678,14 @@ simple_expression : term
 		{
 			//handle int addition and float addition
 			string exprType;
-			if(($1->getType()=="int") && ($2->getType()=="int")) exprType= "int"; 
+			// cout<<lineCount<<$1->getType()<<endl;
+			// cout<<lineCount<<$3->getType()<<endl;
+			if(($1->getType()=="int") && ($3->getType()=="int")) exprType= "int"; 
 			else exprType= "float";
 
 			$$ = new SymbolInfo("", exprType);
 			$$->setName($1->getName()+$2->getName()+$3->getName());
+			// cout<<lineCount<<$$->getType()<<endl;
 			fprintf(logout, "Line %d: simple_expression : simple_expression ADDOP term\n\n%s\n\n", lineCount, $$->getName().c_str());
 			delete $1;
 			delete $2;
