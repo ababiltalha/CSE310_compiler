@@ -1,9 +1,15 @@
+int x,y,z; float a;
 
-
-int a[0];
-int b, c[3];
+int var(int-){
+}
 
 
 int main(){
-    c[2]=c[];
+	int x-y,z;
+	a = 2 + = 6
+	#
+	x = 2;
+	
+	
+	return 0;	
 }

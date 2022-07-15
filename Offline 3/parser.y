@@ -79,8 +79,10 @@ void clearParameterNameList() {
 void yyerror(char *s)
 {
 	errorCount++;
-	fprintf(errorout, "Error at line %d: syntax error\n\n", lineCount);
-	fprintf(logout, "Error at line %d: syntax error\n\n", lineCount);
+	fprintf(errorout, "Error at line %d: %s\n\n", lineCount, s);
+	fprintf(logout, "Error at line %d: %s\n\n", lineCount, s);
+	
+
 }
 
 
@@ -338,10 +340,7 @@ parameter_list  : parameter_list COMMA type_specifier ID
 			$$ = $1;
 			fprintf(logout, "Line %d: parameter_list : type_specifier\n\n%s\n\n",  lineCount, $$->getName().c_str());
 		}
-		| error
-		{
-
-		}
+		| parameter_list error {}
 		;
 
  		
@@ -361,7 +360,7 @@ compound_statement : LCURL enter_scope statements RCURL
 				$$ = new SymbolInfo("{\n}\n","compound_statement");
 				fprintf(logout, "Line %d: compound_statement : LCURL RCURL\n\n%s\n\n",  lineCount, $$->getName().c_str());
 
-				// fprintf(logout, "\n\n%s\n\n", table.printAllScope().c_str());
+				fprintf(logout, "\n\n%s\n\n", table.printAllScope().c_str());
 				table.exitScope();
 			};
 
@@ -526,6 +525,7 @@ declaration_list : declaration_list COMMA ID
 			$$ = new SymbolInfo($1->getName()+","+$3->getName()+"["+$5->getName()+"]", "declaration_list");
 			fprintf(logout, "Line %d: declaration_list COMMA ID LTHIRD CONST_FLOAT RTHIRD\n\n%s\n\n", lineCount, $$->getName().c_str());
 		  }
+		  | declaration_list error {}
  		  ;
  		  
 statements : statement
@@ -540,6 +540,7 @@ statements : statement
 			// deleete $1;
 			// deleete $2;
 	    }
+	   | statements error {}
 	   ;
 	   
 statement : var_declaration
@@ -636,8 +637,6 @@ expression_statement 	: SEMICOLON
 				$$ = new SymbolInfo($1->getName()+";", "expression_statement");
 				fprintf(logout, "Line %d: expression_statement : expression SEMICOLON\n\n%s\n\n", lineCount, $$->getName().c_str());
 			}
-			| error
-			{}
 			;
 	  
 variable : ID 		
@@ -824,7 +823,7 @@ simple_expression : term
 			// deleete $1;
 			// deleete $2;
 			// deleete $3;
-		}
+		} | simple_expression error {}
 		  ;
 					
 term :	unary_expression
