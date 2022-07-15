@@ -90,7 +90,7 @@ extern int yydebug;
     LOGICOP = 291,                 /* LOGICOP  */
     CONST_INT = 292,               /* CONST_INT  */
     CONST_FLOAT = 293,             /* CONST_FLOAT  */
-    LESS_PREC_THAN_ELSE = 294      /* LESS_PREC_THAN_ELSE  */
+    LOWER_THAN_ELSE = 294          /* LOWER_THAN_ELSE  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -135,13 +135,13 @@ extern int yydebug;
 #define LOGICOP 291
 #define CONST_INT 292
 #define CONST_FLOAT 293
-#define LESS_PREC_THAN_ELSE 294
+#define LOWER_THAN_ELSE 294
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 87 "parser.y"
+#line 89 "parser.y"
 
 	SymbolInfo* symbol;
 

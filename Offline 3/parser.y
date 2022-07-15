@@ -78,7 +78,9 @@ void clearParameterNameList() {
 
 void yyerror(char *s)
 {
-	printf("Line %d: error\n", lineCount);
+	errorCount++;
+	fprintf(errorout, "Error at line %d: syntax error\n\n", lineCount);
+	fprintf(logout, "Error at line %d: syntax error\n\n", lineCount);
 }
 
 
@@ -91,7 +93,7 @@ void yyerror(char *s)
 %token <symbol> ID ADDOP MULOP RELOP LOGICOP CONST_INT CONST_FLOAT
 %type <symbol> declaration_list type_specifier var_declaration unit program func_declaration func_definition parameter_list factor variable expression logic_expression argument_list arguments rel_expression simple_expression term unary_expression statement statements compound_statement expression_statement
 
-%nonassoc LESS_PREC_THAN_ELSE
+%nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
 
 %%
@@ -154,6 +156,7 @@ func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON
 				table.insertSymbolInfo(f);
 				clearParameterTypeList();
 			}
+			table.enterScope();table.exitScope(); // dummy scope for declaration
 			$$ = new SymbolInfo($1->getName()+" "+$2->getName()+"("+$4->getName()+");","func_declaration");
 			fprintf(logout, "Line %d: func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON\n\n%s\n\n\n", lineCount, $$->getName().c_str());
 			// deleete $1;
@@ -335,6 +338,10 @@ parameter_list  : parameter_list COMMA type_specifier ID
 			$$ = $1;
 			fprintf(logout, "Line %d: parameter_list : type_specifier\n\n%s\n\n",  lineCount, $$->getName().c_str());
 		}
+		| error
+		{
+
+		}
 		;
 
  		
@@ -342,7 +349,7 @@ compound_statement : LCURL enter_scope statements RCURL
 			{
 				
 
-				$$ = new SymbolInfo("{\n"+$3->getName()+"\n}","compound_statement");
+				$$ = new SymbolInfo("{\n"+$3->getName()+"\n}\n","compound_statement");
 				fprintf(logout, "Line %d: compound_statement : LCURL statements RCURL\n\n%s\n\n",  lineCount, $$->getName().c_str());
 
 				fprintf(logout, "\n\n%s\n\n", table.printAllScope().c_str());
@@ -351,7 +358,7 @@ compound_statement : LCURL enter_scope statements RCURL
 			}
  		    | LCURL enter_scope RCURL
 			{
-				$$ = new SymbolInfo("{\n}","compound_statement");
+				$$ = new SymbolInfo("{\n}\n","compound_statement");
 				fprintf(logout, "Line %d: compound_statement : LCURL RCURL\n\n%s\n\n",  lineCount, $$->getName().c_str());
 
 				// fprintf(logout, "\n\n%s\n\n", table.printAllScope().c_str());
@@ -361,7 +368,12 @@ compound_statement : LCURL enter_scope statements RCURL
 enter_scope :
 			{
 				table.enterScope();
-				if(parameterTypeList.size()>0){
+				if ((parameterNameList.size() != parameterTypeList.size())) {
+					errorCount++;
+					fprintf(errorout, "Error at line %d: Parameters name not given in function definition\n\n", lineCount);
+					fprintf(logout, "Error at line %d: Parameters name not given in function definition\n\n", lineCount);
+				}
+				else if(parameterTypeList.size()>0){
 					for(int i=0; i<parameterTypeList.size(); i++){
 						table.insertSymbol(parameterNameList[i], parameterTypeList[i]);
 					}
@@ -504,7 +516,7 @@ statement : var_declaration
 		// deleete $5;
 		// deleete $7;
 	  }
-	  | IF LPAREN expression RPAREN statement %prec LESS_PREC_THAN_ELSE
+	  | IF LPAREN expression RPAREN statement %prec LOWER_THAN_ELSE
 	  {
 		$$ = new SymbolInfo("if("+$3->getName()+")"+$5->getName(), "statement");
 		fprintf(logout, "Line %d: statement : IF LPAREN expression RPAREN statement\n\n%s\n\n", lineCount, $$->getName().c_str());
@@ -574,6 +586,8 @@ expression_statement 	: SEMICOLON
 				$$ = new SymbolInfo($1->getName()+";", "expression_statement");
 				fprintf(logout, "Line %d: expression_statement : expression SEMICOLON\n\n%s\n\n", lineCount, $$->getName().c_str());
 			}
+			| error
+			{}
 			;
 	  
 variable : ID 		
@@ -606,8 +620,8 @@ variable : ID
 				// handle [float] error
 				if ($3->getType()!="int"){
 					errorCount++;
-					fprintf(errorout, "Error at line %d: Expression inside third bracket not an integer\n\n", lineCount);
-					fprintf(logout, "Error at line %d: Expression inside third bracket not an integer\n\n", lineCount);
+					fprintf(errorout, "Error at line %d: Expression inside third brackets not an integer\n\n", lineCount);
+					fprintf(logout, "Error at line %d: Expression inside third brackets not an integer\n\n", lineCount);
 				}
 				$$ = new SymbolInfo($1->getName()+"["+$3->getName()+"]", getArrayName(varType));
 			} 
@@ -632,19 +646,25 @@ expression : logic_expression
 	   | variable ASSIGNOP logic_expression
 	   	{
 			// bunch of type mismatch handling (but int in float is allowed (added))
-			if ($1->getType()!=$3->getType()){
+			// cout<<$1->getType()<<" "<<$3->getType()<<endl;
+			if ($1->getType()=="void" || $3->getType()=="void"){
+				errorCount++;
+				fprintf(errorout, "Error at line %d: Void function used in expression\n\n", lineCount);
+				fprintf(logout, "Error at line %d: Void function used in expression\n\n", lineCount);
+			}
+			else if ($1->getType()!=$3->getType()){
 				string varType= $1->getType();
 				string exprType= $3->getType();
 				if ((varType.find("[") != string::npos) || (exprType.find("[") != string::npos)) { // either an array
 					errorCount++;
-					fprintf(errorout, "Error at line %d: Type Mismatch\n\n", lineCount);
-					fprintf(logout, "Error at line %d: Type Mismatch\n\n", lineCount);
+					fprintf(errorout, "Error at line %d: Type mismatch, %s is an array\n\n", lineCount, $1->getName().c_str());
+					fprintf(logout, "Error at line %d: Type mismatch, %s is an array\n\n", lineCount, $1->getName().c_str());
 				}
 				else if (varType=="float" && exprType=="int") ;
-				else if (varType=="variable" || exprType=="factor");
+				else if (varType=="variable" || exprType=="factor") ;
 				else {
 					errorCount++;
-					// // cout<<varType<<" "<<exprType<<endl;
+					// cout<<varType<<" "<<exprType<<endl;
 					fprintf(errorout, "Error at line %d: Type Mismatch\n\n", lineCount);
 					fprintf(logout, "Error at line %d: Type Mismatch\n\n", lineCount);
 				}
@@ -663,6 +683,11 @@ logic_expression : rel_expression
 		}
 		 | rel_expression LOGICOP rel_expression
 		{
+			if ($1->getType()=="void" || $3->getType()=="void"){
+				errorCount++;
+				fprintf(errorout, "Error at line %d: Void function used in expression\n\n", lineCount);
+				fprintf(logout, "Error at line %d: Void function used in expression\n\n", lineCount);
+			}
 			$$ = new SymbolInfo("", "int");
 			$$->setName($1->getName()+$2->getName()+$3->getName());
 			fprintf(logout, "Line %d: logic_expression : rel_expression LOGICOP rel_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
@@ -679,6 +704,11 @@ rel_expression	: simple_expression
 		}
 		| simple_expression RELOP simple_expression
 		{
+			if ($1->getType()=="void" || $3->getType()=="void"){
+				errorCount++;
+				fprintf(errorout, "Error at line %d: Void function used in expression\n\n", lineCount);
+				fprintf(logout, "Error at line %d: Void function used in expression\n\n", lineCount);
+			}
 			$$ = new SymbolInfo("", "int");
 			$$->setName($1->getName()+$2->getName()+$3->getName());
 			fprintf(logout, "Line %d: rel_expression : simple_expression RELOP simple_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
@@ -701,6 +731,12 @@ simple_expression : term
 			// // cout<<lineCount<<$3->getType()<<endl;
 			if(($1->getType()=="int") && ($3->getType()=="int")) exprType= "int"; 
 			else exprType= "float";
+			if ($1->getType()=="void" || $3->getType()=="void"){
+				// errorCount++;
+				// fprintf(errorout, "Error at line %d: Void function used in expression\n\n", lineCount);
+				// fprintf(logout, "Error at line %d: Void function used in expression\n\n", lineCount);
+				exprType= "void";
+			}
 
 			$$ = new SymbolInfo("", exprType);
 			$$->setName($1->getName()+$2->getName()+$3->getName());
@@ -720,7 +756,13 @@ term :	unary_expression
      |  term MULOP unary_expression
 	 {
 		//handle errors
-		if($2->getName()=="%"){ // modulus cases
+		if ($1->getType()=="void" || $3->getType()=="void"){
+			// errorCount++;
+			// fprintf(errorout, "Error at line %d: Void function used in expression\n\n", lineCount);
+			// fprintf(logout, "Error at line %d: Void function used in expression\n\n", lineCount);
+			$$ = new SymbolInfo($1->getName()+$2->getName()+$3->getName(),"void");
+		}
+		else if($2->getName()=="%"){ // modulus cases
 			if(($1->getType()=="int") && ($3->getType()=="int")){
 				if($3->getName()=="0"){
 					errorCount++;
@@ -750,12 +792,22 @@ term :	unary_expression
 
 unary_expression : ADDOP unary_expression  
 		 {
+			if ($2->getType()=="void"){
+				errorCount++;
+				fprintf(errorout, "Error at line %d: Void function used in expression\n\n", lineCount);
+				fprintf(logout, "Error at line %d: Void function used in expression\n\n", lineCount);
+			}
 			$$ = new SymbolInfo($1->getName()+$2->getName(), $2->getType());
 			fprintf(logout, "Line %d: unary_expression : ADDOP unary_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
 			// deleete $2;
 		 }
 		 | NOT unary_expression 
 		 {
+			if ($2->getType()=="void"){
+				errorCount++;
+				fprintf(errorout, "Error at line %d: Void function used in expression\n\n", lineCount);
+				fprintf(logout, "Error at line %d: Void function used in expression\n\n", lineCount);
+			}
 			$$ = new SymbolInfo("!"+$2->getName(), $2->getType());
 			fprintf(logout, "Line %d: unary_expression : NOT unary_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
 			// deleete $2;
@@ -826,7 +878,7 @@ factor	: variable
 			}
 		}
 		$$ = new SymbolInfo($1->getName()+"("+$3->getName()+")", returnType);
-		fprintf(logout, "Line %d: factor : LPAREN expression RPAREN\n\n%s\n\n", lineCount, $$->getName().c_str());
+		fprintf(logout, "Line %d: factor : ID LPAREN argument_list RPAREN\n\n%s\n\n", lineCount, $$->getName().c_str());
 		// deleete $1;
 		// deleete $3;
 	}

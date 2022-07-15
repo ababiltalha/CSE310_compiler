@@ -150,12 +150,12 @@ string ScopeTable::print(){
     {
         SymbolInfo* current=this->hashTable[i];
         if(current==nullptr) continue;
-        str+="\n"+to_string(i)+" --> ";
+        str+="\n "+to_string(i)+" --> ";
         // cout<<endl<<i<<" --> ";
         while(current!=nullptr){
             // cout<<endl<<i<<" --> ";
             // cout<<*current;
-            str+="< "+current->getName()+" : ID >";
+            str+="< "+current->getName()+" , ID >";
             current=current->getNext();
         }
     }

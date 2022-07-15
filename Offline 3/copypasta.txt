@@ -66,3 +66,13 @@ variable : ID
 	 ;
 
 $$ = new SymbolInfo($1->getName()+$2->getName()+$3->getName(),"int");
+
+errorCount++;
+fprintf(errorout, "Error at line %d: Type mismatch, argument is an array\n\n", lineCount);
+fprintf(logout, "Error at line %d: Type mismatch, argument is an array\n\n", lineCount);
+
+if ((parameterNameList.size() != parameterTypeList.size())) {
+				errorCount++;
+				fprintf(errorout, "Error at line %d: 1th parameters name not given in function definition of %s\n\n", lineCount, funcName.c_str());
+				fprintf(logout, "Error at line %d: 1th parameters name not given in function definition of %s\n\n", lineCount, funcName.c_str());
+			}

@@ -173,12 +173,15 @@ EMPTY_CHAR \'\'
 
 [\'][\'] {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Empty character constant error \'\'\n\n",lineCount);
+	fprintf(logout,"Error at line no %d: Empty character constant error \'\'\n\n",lineCount);
+	fprintf(errorout,"Error at line no %d: Empty character constant error \'\'\n\n",lineCount);
+	
 }
 
 {UNFINISHED_CHAR}|[\'][\\][\'] {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Unterminated character %s\n\n",lineCount,yytext);
+	fprintf(logout,"Error at line no %d: Unterminated character %s\n\n",lineCount,yytext);
+	fprintf(errorout,"Error at line no %d: Unterminated character %s\n\n",lineCount,yytext);
 }
 
 {CONST_CHAR} {
@@ -190,7 +193,8 @@ EMPTY_CHAR \'\'
 
 {MULTI_CHAR} {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Multi character constant error %s\n\n",lineCount,yytext);
+	fprintf(logout,"Error at line no %d: Multi character constant error %s\n\n",lineCount,yytext);
+	fprintf(errorout,"Error at line no %d: Multi character constant error %s\n\n",lineCount,yytext);
 }
 
 "+"|"-" {
@@ -287,7 +291,8 @@ EMPTY_CHAR \'\'
 	increaseErrorCount();
 	newString=yytext;
 	logString.append(newString);
-	// fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
+	fprintf(errorout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
 	tokenString="";
 	logString="";
@@ -297,7 +302,8 @@ EMPTY_CHAR \'\'
 	lineCount++;
 	increaseErrorCount();
 	// logString.append(newString);
-	// fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
+	fprintf(errorout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
 	tokenString="";
 	logString="";
@@ -311,8 +317,8 @@ EMPTY_CHAR \'\'
 
 <STRING_STATE><<EOF>> {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
-	BEGIN INITIAL;
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
+	fprintf(errorout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());BEGIN INITIAL;
 	tokenString="";
 	logString="";
 	endOfFile();
@@ -388,7 +394,8 @@ EMPTY_CHAR \'\'
 <MULTILINE_CMNT_STATE><<EOF>> {
 	BEGIN INITIAL;
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Unterminated comment %s\n\n",logStringStart,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated comment %s\n\n",logStringStart,logString.c_str());
+	fprintf(errorout,"Error at line no %d: Unterminated comment %s\n\n",logStringStart,logString.c_str());
 	endOfFile();
 	return 0;
 }
@@ -405,23 +412,37 @@ EMPTY_CHAR \'\'
 {TOO_MANY_DEC} {
 	increaseErrorCount();
 	fprintf(errorout,"Error at line no %d: Too many decimal points %s\n\n",lineCount,yytext);
+	fprintf(logout,"Error at line no %d: Too many decimal points %s\n\n",lineCount,yytext);
+	
+	SymbolInfo *s= new  SymbolInfo(yytext, "float");
+	yylval.symbol = s;
 	return CONST_FLOAT;
 }
 
 {ILL_FORM_NUM} {
 	increaseErrorCount();
 	fprintf(errorout,"Error at line no %d: Ill formed number %s\n\n",lineCount,yytext);
+	fprintf(logout,"Error at line no %d: Ill formed number %s\n\n",lineCount,yytext);
+	
+	SymbolInfo *s= new  SymbolInfo(yytext, "float");
+	yylval.symbol = s;
 	return CONST_FLOAT;
 }
 
 {INVALID_NUM_ID} {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Invalid prefix on ID or invalid suffix on Number %s\n\n",lineCount,yytext);
+	fprintf(logout,"Error at line no %d: Invalid prefix on ID or invalid suffix on Number %s\n\n",lineCount,yytext);
+	fprintf(errorout,"Error at line no %d: Invalid prefix on ID or invalid suffix on Number %s\n\n",lineCount,yytext);
+	SymbolInfo *s= new  SymbolInfo(yytext, "ID");
+	yylval.symbol = s;
+	return ID; 
 }
 
 . {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Unrecognized character %s\n\n",lineCount,yytext);
+	fprintf(logout,"Error at line %d: Unrecognized character %s\n\n",lineCount,yytext);
+	fprintf(errorout,"Error at line %d: Unrecognized character %s\n\n",lineCount,yytext);
+	
 }
 
 <<EOF>> {

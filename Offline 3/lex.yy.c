@@ -1010,20 +1010,23 @@ YY_RULE_SETUP
 #line 174 "analyzer.l"
 {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Empty character constant error \'\'\n\n",lineCount);
+	fprintf(logout,"Error at line no %d: Empty character constant error \'\'\n\n",lineCount);
+	fprintf(errorout,"Error at line no %d: Empty character constant error \'\'\n\n",lineCount);
+	
 }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 179 "analyzer.l"
+#line 181 "analyzer.l"
 {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Unterminated character %s\n\n",lineCount,yytext);
+	fprintf(logout,"Error at line no %d: Unterminated character %s\n\n",lineCount,yytext);
+	fprintf(errorout,"Error at line no %d: Unterminated character %s\n\n",lineCount,yytext);
 }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 184 "analyzer.l"
+#line 187 "analyzer.l"
 {
 	char ch= toSpecial(yytext);
 	// fprintf(tokenout,"<CONST_CHAR, %c> ", ch);
@@ -1033,15 +1036,16 @@ YY_RULE_SETUP
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 191 "analyzer.l"
+#line 194 "analyzer.l"
 {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Multi character constant error %s\n\n",lineCount,yytext);
+	fprintf(logout,"Error at line no %d: Multi character constant error %s\n\n",lineCount,yytext);
+	fprintf(errorout,"Error at line no %d: Multi character constant error %s\n\n",lineCount,yytext);
 }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 196 "analyzer.l"
+#line 200 "analyzer.l"
 {
 	// fprintf(tokenout,"<ADDOP,%s> ",yytext);
 	// fprintf(logout,"Line no %d: Token <ADDOP> Lexeme %s found\n\n",lineCount,yytext);
@@ -1052,7 +1056,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 204 "analyzer.l"
+#line 208 "analyzer.l"
 {
 	// fprintf(tokenout,"<MULOP,%s> ",yytext);
 	// fprintf(logout,"Line no %d: Token <MULOP> Lexeme %s found\n\n",lineCount,yytext);
@@ -1063,17 +1067,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 212 "analyzer.l"
+#line 216 "analyzer.l"
 {return INCOP;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 213 "analyzer.l"
+#line 217 "analyzer.l"
 {return DECOP;}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 215 "analyzer.l"
+#line 219 "analyzer.l"
 {
 	// fprintf(tokenout,"<RELOP,%s> ",yytext);
 	// fprintf(logout,"Line no %d: Token <RELOP> Lexeme %s found\n\n",lineCount,yytext);
@@ -1084,7 +1088,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 223 "analyzer.l"
+#line 227 "analyzer.l"
 {
 	// fprintf(tokenout,"<ASSIGNOP,%s> ",yytext);
 	// fprintf(logout,"Line no %d: Token <ASSIGNOP> Lexeme %s found\n\n",lineCount,yytext);
@@ -1093,7 +1097,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 229 "analyzer.l"
+#line 233 "analyzer.l"
 {
 	// fprintf(tokenout,"<LOGICOP,%s> ",yytext);
 	// fprintf(logout,"Line no %d: Token <LOGICOP> Lexeme %s found\n\n",lineCount,yytext);
@@ -1104,7 +1108,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 237 "analyzer.l"
+#line 241 "analyzer.l"
 {
 	// fprintf(tokenout,"<NOT,%s> ",yytext);
 	// fprintf(logout,"Line no %d: Token <NOT> Lexeme %s found\n\n",lineCount,yytext);
@@ -1113,47 +1117,47 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 243 "analyzer.l"
+#line 247 "analyzer.l"
 { return SEMICOLON;}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 244 "analyzer.l"
+#line 248 "analyzer.l"
 {return COMMA;}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 245 "analyzer.l"
+#line 249 "analyzer.l"
 {return LPAREN;cout<<"a"<<endl;}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 246 "analyzer.l"
+#line 250 "analyzer.l"
 {return RPAREN;}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 247 "analyzer.l"
+#line 251 "analyzer.l"
 {return LCURL;}
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 248 "analyzer.l"
+#line 252 "analyzer.l"
 {return RCURL;}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 249 "analyzer.l"
+#line 253 "analyzer.l"
 {return LTHIRD;}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 250 "analyzer.l"
+#line 254 "analyzer.l"
 {return RTHIRD;}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 252 "analyzer.l"
+#line 256 "analyzer.l"
 {
 	BEGIN STRING_STATE;
 	logStringStart=lineCount;
@@ -1164,7 +1168,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 260 "analyzer.l"
+#line 264 "analyzer.l"
 {
 	newString=yytext;
 	tokenString.append(newString);
@@ -1178,7 +1182,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 271 "analyzer.l"
+#line 275 "analyzer.l"
 {
 	newString=yytext;
 	logString.append(newString);
@@ -1190,7 +1194,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 280 "analyzer.l"
+#line 284 "analyzer.l"
 {
 	lineCount++;
 	newString=yytext;
@@ -1199,12 +1203,13 @@ YY_RULE_SETUP
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 286 "analyzer.l"
+#line 290 "analyzer.l"
 {
 	increaseErrorCount();
 	newString=yytext;
 	logString.append(newString);
-	// fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
+	fprintf(errorout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
 	tokenString="";
 	logString="";
@@ -1212,12 +1217,13 @@ YY_RULE_SETUP
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 296 "analyzer.l"
+#line 301 "analyzer.l"
 {
 	lineCount++;
 	increaseErrorCount();
 	// logString.append(newString);
-	// fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
+	fprintf(errorout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
 	tokenString="";
 	logString="";
@@ -1225,7 +1231,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 306 "analyzer.l"
+#line 312 "analyzer.l"
 {
 	newString=yytext;
 	tokenString.append(newString);
@@ -1233,11 +1239,11 @@ YY_RULE_SETUP
 }
 	YY_BREAK
 case YY_STATE_EOF(STRING_STATE):
-#line 312 "analyzer.l"
+#line 318 "analyzer.l"
 {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
-	BEGIN INITIAL;
+	fprintf(logout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());
+	fprintf(errorout,"Error at line no %d: Unterminated String %s\n\n",logStringStart,logString.c_str());BEGIN INITIAL;
 	tokenString="";
 	logString="";
 	endOfFile();
@@ -1246,7 +1252,7 @@ case YY_STATE_EOF(STRING_STATE):
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 322 "analyzer.l"
+#line 328 "analyzer.l"
 {
 	BEGIN SINGLELINE_CMNT_STATE;
 	logStringStart=lineCount;
@@ -1256,7 +1262,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 329 "analyzer.l"
+#line 335 "analyzer.l"
 {
 	lineCount++;
 	// fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",logStringStart,logString.c_str());
@@ -1266,7 +1272,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 336 "analyzer.l"
+#line 342 "analyzer.l"
 {
 	lineCount++;
 	newString=yytext;
@@ -1275,7 +1281,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 342 "analyzer.l"
+#line 348 "analyzer.l"
 {
 	newString=yytext;
 	logString.append(newString);
@@ -1283,14 +1289,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 347 "analyzer.l"
+#line 353 "analyzer.l"
 {
 	newString=yytext;
 	logString.append(newString);
 }
 	YY_BREAK
 case YY_STATE_EOF(SINGLELINE_CMNT_STATE):
-#line 352 "analyzer.l"
+#line 358 "analyzer.l"
 {
 	// fprintf(logout,"Line no %d: Token <COMMENT> Lexeme %s found\n\n",logStringStart,logString.c_str());
 	BEGIN INITIAL;
@@ -1302,7 +1308,7 @@ case YY_STATE_EOF(SINGLELINE_CMNT_STATE):
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 361 "analyzer.l"
+#line 367 "analyzer.l"
 {
 	BEGIN MULTILINE_CMNT_STATE;
 	logStringStart=lineCount;
@@ -1312,7 +1318,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 368 "analyzer.l"
+#line 374 "analyzer.l"
 {
 	BEGIN INITIAL;
 	newString=yytext;
@@ -1323,7 +1329,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 376 "analyzer.l"
+#line 382 "analyzer.l"
 {
 	lineCount++;
 	newString=yytext;
@@ -1332,25 +1338,26 @@ YY_RULE_SETUP
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 383 "analyzer.l"
+#line 389 "analyzer.l"
 {
 	newString=yytext;
 	logString.append(newString);
 }
 	YY_BREAK
 case YY_STATE_EOF(MULTILINE_CMNT_STATE):
-#line 388 "analyzer.l"
+#line 394 "analyzer.l"
 {
 	BEGIN INITIAL;
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Unterminated comment %s\n\n",logStringStart,logString.c_str());
+	fprintf(logout,"Error at line no %d: Unterminated comment %s\n\n",logStringStart,logString.c_str());
+	fprintf(errorout,"Error at line no %d: Unterminated comment %s\n\n",logStringStart,logString.c_str());
 	endOfFile();
 	return 0;
 }
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 396 "analyzer.l"
+#line 403 "analyzer.l"
 {
 	// fprintf(tokenout,"<ID,%s> ",yytext);
 	// fprintf(logout,"Line no %d: Token <ID> Lexeme %s found\n\n",lineCount,yytext);
@@ -1362,41 +1369,55 @@ YY_RULE_SETUP
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 405 "analyzer.l"
+#line 412 "analyzer.l"
 {
 	increaseErrorCount();
 	fprintf(errorout,"Error at line no %d: Too many decimal points %s\n\n",lineCount,yytext);
+	fprintf(logout,"Error at line no %d: Too many decimal points %s\n\n",lineCount,yytext);
+	
+	SymbolInfo *s= new  SymbolInfo(yytext, "float");
+	yylval.symbol = s;
 	return CONST_FLOAT;
 }
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 411 "analyzer.l"
+#line 422 "analyzer.l"
 {
 	increaseErrorCount();
 	fprintf(errorout,"Error at line no %d: Ill formed number %s\n\n",lineCount,yytext);
+	fprintf(logout,"Error at line no %d: Ill formed number %s\n\n",lineCount,yytext);
+	
+	SymbolInfo *s= new  SymbolInfo(yytext, "float");
+	yylval.symbol = s;
 	return CONST_FLOAT;
 }
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 417 "analyzer.l"
+#line 432 "analyzer.l"
 {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Invalid prefix on ID or invalid suffix on Number %s\n\n",lineCount,yytext);
+	fprintf(logout,"Error at line no %d: Invalid prefix on ID or invalid suffix on Number %s\n\n",lineCount,yytext);
+	fprintf(errorout,"Error at line no %d: Invalid prefix on ID or invalid suffix on Number %s\n\n",lineCount,yytext);
+	SymbolInfo *s= new  SymbolInfo(yytext, "ID");
+	yylval.symbol = s;
+	return ID; 
 }
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 422 "analyzer.l"
+#line 441 "analyzer.l"
 {
 	increaseErrorCount();
-	// fprintf(logout,"Error at line no %d: Unrecognized character %s\n\n",lineCount,yytext);
+	fprintf(logout,"Error at line %d: Unrecognized character %s\n\n",lineCount,yytext);
+	fprintf(errorout,"Error at line %d: Unrecognized character %s\n\n",lineCount,yytext);
+	
 }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(UNKNOWN_WORD):
-#line 427 "analyzer.l"
+#line 448 "analyzer.l"
 {
 	endOfFile();
 	return 0;
@@ -1404,10 +1425,10 @@ case YY_STATE_EOF(UNKNOWN_WORD):
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 433 "analyzer.l"
+#line 454 "analyzer.l"
 ECHO;
 	YY_BREAK
-#line 1411 "lex.yy.c"
+#line 1432 "lex.yy.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2295,7 +2316,7 @@ int main()
 	return 0;
 	}
 #endif
-#line 433 "analyzer.l"
+#line 454 "analyzer.l"
 
 
 
