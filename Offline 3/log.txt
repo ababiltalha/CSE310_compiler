@@ -1,507 +1,191 @@
-Line 1: type_specifier : INT
-
-int
-
-Line 1: declaration_list : ID
-
-x
-
-Line 1: declaration_list : declaration_list COMMA ID
-
-x,y
-
-Line 1: declaration_list : declaration_list COMMA ID
-
-x,y,z
-
-Line 1: var_declaration : type_specifier declaration_list SEMICOLON
-
-int x,y,z;
-
-Line 1: unit : var_declaration
-
-int x,y,z;
-
-
-Line 1: program : unit
-
-int x,y,z;
-
-
-Line 1: type_specifier : FLOAT
-
-float
-
-Line 1: declaration_list : ID
-
-a
-
-Line 1: var_declaration : type_specifier declaration_list SEMICOLON
-
-float a;
-
-Line 1: unit : var_declaration
-
-float a;
-
-
-Line 1: program : program unit
-
-int x,y,z;
-float a;
-
-
 Line 3: type_specifier : INT
 
 int
 
-Line 3: type_specifier : INT
+Error at line 3: Array size cannot be zero
+
+Line 3: declaration_list : ID LTHIRD CONST_INT RTHIRD
+
+a[0]
+
+Line 3: var_declaration : type_specifier declaration_list SEMICOLON
+
+int a[0];
+
+Line 3: unit : var_declaration
+
+int a[0];
+
+
+Line 3: program : unit
+
+int a[0];
+
+
+Line 4: type_specifier : INT
 
 int
 
-Line 3: parameter_list : type_specifier
+Line 4: declaration_list : ID
 
-int
+b
 
-Error at line 3: syntax error
+Line 4: declaration_list : declaration_list COMMA ID LTHIRD CONST_INT RTHIRD
 
-Error at line 3: Parameters name not given in function definition
+b,c[3]
 
-Line 4: compound_statement : LCURL RCURL
+Line 4: var_declaration : type_specifier declaration_list SEMICOLON
 
-{
-}
+int b,c[3];
 
+Line 4: unit : var_declaration
 
-Line 4: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
-
-int var(-){
-}
-
-
-
-
-Line 4: unit : func_definition
-
-int var(-){
-}
-
-
+int b,c[3];
 
 
 Line 4: program : program unit
 
-int x,y,z;
-float a;
-int var(-){
-}
-
-
+int a[0];
+int b,c[3];
 
 
 Line 7: type_specifier : INT
 
 int
 
-Line 8: type_specifier : INT
+Line 8: factor : CONST_INT
 
-int
-
-Line 8: declaration_list : ID
-
-x
-
-Error at line 8: syntax error
-
-Line 8: statement : expression_statement
-
--
-
-Line 8: statements : statement
-
--
-
-Line 8: variable : ID
-
-y
-
-Line 8: factor : variable
-
-y
+2
 
 Line 8: unary_expression : factor
 
-y
-
-Line 8: unary_expression : ADDOP unary_expression
-
--y
+2
 
 Line 8: term : unary_expression
 
--y
+2
 
 Line 8: simple_expression : term
 
--y
+2
 
 Line 8: rel_expression : simple_expression
 
--y
+2
 
 Line 8: logic_expression : rel_expression
 
--y
+2
 
 Line 8: expression : logic_expression
 
--y
+2
 
-Line 8: statement : expression_statement
+Line 8: variable : ID LTHIRD expression RTHIRD
 
-y
+c[2]
 
-Line 8: statements : statements statement
+Error at line 8: Array size undefined
 
--
-y
+Line 8: variable : ID LTHIRD expression RTHIRD
 
-Line 8: statement : expression_statement
-
-y
-
-Line 8: statements : statements statement
-
--
-y
-y
-
-Line 8: variable : ID
-
-z
+c[]
 
 Line 8: factor : variable
 
-z
+c[]
 
 Line 8: unary_expression : factor
 
-z
+c[]
 
 Line 8: term : unary_expression
 
-z
+c[]
 
 Line 8: simple_expression : term
 
-z
+c[]
 
 Line 8: rel_expression : simple_expression
 
-z
+c[]
 
 Line 8: logic_expression : rel_expression
 
-z
+c[]
 
-Line 8: expression : logic_expression
+Line 8: expression : variable ASSIGNOP logic_expression
 
-z
+c[2]=c[]
 
 Line 8: expression_statement : expression SEMICOLON
 
-z;
+c[2]=c[];
 
 Line 8: statement : expression_statement
 
-z;
+c[2]=c[];
 
-Line 8: statements : statements statement
+Line 8: statements : statement
 
--
-y
-y
-z;
+c[2]=c[];
 
-Line 9: variable : ID
-
-a
-
-Line 9: factor : CONST_INT
-
-2
-
-Line 9: unary_expression : factor
-
-2
-
-Line 9: term : unary_expression
-
-2
-
-Line 9: simple_expression : term
-
-2
-
-Error at line 9: syntax error
-
-Line 9: statement : expression_statement
-
-+
-
-Line 9: statements : statements statement
-
--
-y
-y
-z;
-+
-
-Line 9: statement : expression_statement
-
-+
-
-Line 9: statements : statements statement
-
--
-y
-y
-z;
-+
-+
-
-Line 9: factor : CONST_INT
-
-6
-
-Line 9: unary_expression : factor
-
-6
-
-Line 9: term : unary_expression
-
-6
-
-Error at line 10: Unrecognized character #
-
-Line 11: simple_expression : term
-
-6
-
-Line 11: rel_expression : simple_expression
-
-6
-
-Line 11: logic_expression : rel_expression
-
-6
-
-Line 11: expression : logic_expression
-
-6
-
-Line 11: statement : expression_statement
-
-x
-
-Line 11: statements : statements statement
-
--
-y
-y
-z;
-+
-+
-x
-
-Line 11: variable : ID
-
-x
-
-Line 11: factor : CONST_INT
-
-2
-
-Line 11: unary_expression : factor
-
-2
-
-Line 11: term : unary_expression
-
-2
-
-Line 11: simple_expression : term
-
-2
-
-Line 11: rel_expression : simple_expression
-
-2
-
-Line 11: logic_expression : rel_expression
-
-2
-
-Line 11: expression : variable ASSIGNOP logic_expression
-
-x=2
-
-Line 11: expression_statement : expression SEMICOLON
-
-x=2;
-
-Line 11: statement : expression_statement
-
-x=2;
-
-Line 11: statements : statements statement
-
--
-y
-y
-z;
-+
-+
-x
-x=2;
-
-Line 14: factor : CONST_INT
-
-0
-
-Line 14: unary_expression : factor
-
-0
-
-Line 14: term : unary_expression
-
-0
-
-Line 14: simple_expression : term
-
-0
-
-Line 14: rel_expression : simple_expression
-
-0
-
-Line 14: logic_expression : rel_expression
-
-0
-
-Line 14: expression : logic_expression
-
-0
-
-Line 14: statement : RETURN expression SEMICOLON
-
-return 0;
-
-Line 14: statements : statements statement
-
--
-y
-y
-z;
-+
-+
-x
-x=2;
-return 0;
-
-Line 15: compound_statement : LCURL statements RCURL
+Line 9: compound_statement : LCURL statements RCURL
 
 {
--
-y
-y
-z;
-+
-+
-x
-x=2;
-return 0;
+c[2]=c[];
 }
 
 
 
 
-ScopeTable # 1.2
+ScopeTable # 1.1
 
 ScopeTable # 1
- 0 --> < x , ID >
- 1 --> < y , ID >
- 2 --> < z , ID >
- 7 --> < a , ID >< var , ID >< main , ID >
+ 7 --> < a , ID >< main , ID >
+ 8 --> < b , ID >
+ 9 --> < c , ID >
 
 
 
-Line 15: func_definition : type_specifier ID LPAREN RPAREN compound_statement
-
-int main(){
--
-y
-y
-z;
-+
-+
-x
-x=2;
-return 0;
-}
-
-
-
-
-Line 15: unit : func_definition
+Line 9: func_definition : type_specifier ID LPAREN RPAREN compound_statement
 
 int main(){
--
-y
-y
-z;
-+
-+
-x
-x=2;
-return 0;
+c[2]=c[];
 }
 
 
 
 
-Line 15: program : program unit
-
-int x,y,z;
-float a;
-int var(-){
-}
-
+Line 9: unit : func_definition
 
 int main(){
--
-y
-y
-z;
-+
-+
-x
-x=2;
-return 0;
+c[2]=c[];
 }
 
 
 
 
-Line 16: start : program
+Line 9: program : program unit
+
+int a[0];
+int b,c[3];
+int main(){
+c[2]=c[];
+}
+
+
+
+
+Line 9: start : program
 
 
 ScopeTable # 1
- 0 --> < x , ID >
- 1 --> < y , ID >
- 2 --> < z , ID >
- 7 --> < a , ID >< var , ID >< main , ID >
+ 7 --> < a , ID >< main , ID >
+ 8 --> < b , ID >
+ 9 --> < c , ID >
 
 
-Total lines: 16
-Total errors: 5
+Total lines: 9
+Total errors: 2

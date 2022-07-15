@@ -457,6 +457,12 @@ declaration_list : declaration_list COMMA ID
 		  }
  		  | declaration_list COMMA ID LTHIRD CONST_INT RTHIRD 
 		  {
+			if($5->getName()=="0"){
+				errorCount++;
+				fprintf(errorout, "Error at line %d: Array size cannot be zero\n\n", lineCount);
+				fprintf(logout, "Error at line %d: Array size cannot be zero\n\n", lineCount);
+			}
+			
 			$$ = new SymbolInfo($1->getName()+","+$3->getName()+"["+$5->getName()+"]", "declaration_list");
 			fprintf(logout, "Line %d: declaration_list : declaration_list COMMA ID LTHIRD CONST_INT RTHIRD\n\n%s\n\n", lineCount, $$->getName().c_str());
 			// deleete $1;
@@ -471,10 +477,54 @@ declaration_list : declaration_list COMMA ID
 		  }
  		  | ID LTHIRD CONST_INT RTHIRD
 		  {
+			if($3->getName()=="0"){
+				errorCount++;
+				fprintf(errorout, "Error at line %d: Array size cannot be zero\n\n", lineCount);
+				fprintf(logout, "Error at line %d: Array size cannot be zero\n\n", lineCount);
+			}
+			
 			$$ = new SymbolInfo($1->getName()+"["+$3->getName()+"]", "declaration_list");
 			fprintf(logout, "Line %d: declaration_list : ID LTHIRD CONST_INT RTHIRD\n\n%s\n\n", lineCount, $$->getName().c_str());
 			// deleete $1;
 			// deleete $3;
+		  }
+		  | ID LTHIRD RTHIRD
+		  {
+			errorCount++;
+			fprintf(errorout, "Error at line %d: Array size undefined\n\n", lineCount);
+			fprintf(logout, "Error at line %d: Array size undefined\n\n", lineCount);
+
+			$$ = new SymbolInfo($1->getName()+"[]", "declaration_list");
+			fprintf(logout, "Line %d: declaration_list : ID LTHIRD RTHIRD\n\n%s\n\n", lineCount, $$->getName().c_str());
+			
+		  }
+		  | declaration_list COMMA ID LTHIRD RTHIRD 
+		  {
+			errorCount++;
+			fprintf(errorout, "Error at line %d: Array size undefined\n\n", lineCount);
+			fprintf(logout, "Error at line %d: Array size undefined\n\n", lineCount);
+
+			$$ = new SymbolInfo($1->getName()+","+$3->getName()+"[]", "declaration_list");
+			fprintf(logout, "Line %d: declaration_list : declaration_list COMMA ID LTHIRD RTHIRD\n\n%s\n\n", lineCount, $$->getName().c_str());
+		  }
+ 		  | ID LTHIRD CONST_FLOAT RTHIRD
+		  {
+			errorCount++;
+			fprintf(errorout, "Error at line %d: Expression inside third brackets not an integer\n\n", lineCount);
+			fprintf(logout, "Error at line %d: Expression inside third brackets not an integer\n\n", lineCount);
+
+			$$ = new SymbolInfo($1->getName()+"["+$3->getName()+"]", "declaration_list");
+			fprintf(logout, "Line %d: declaration_list : ID LTHIRD CONST_FLOAT RTHIRD\n\n%s\n\n", lineCount, $$->getName().c_str());
+			
+		  }
+		  | declaration_list COMMA ID LTHIRD CONST_FLOAT RTHIRD 
+		  {
+			errorCount++;
+			fprintf(errorout, "Error at line %d: Expression inside third brackets not an integer\n\n", lineCount);
+			fprintf(logout, "Error at line %d: Expression inside third brackets not an integer\n\n", lineCount);
+
+			$$ = new SymbolInfo($1->getName()+","+$3->getName()+"["+$5->getName()+"]", "declaration_list");
+			fprintf(logout, "Line %d: declaration_list COMMA ID LTHIRD CONST_FLOAT RTHIRD\n\n%s\n\n", lineCount, $$->getName().c_str());
 		  }
  		  ;
  		  
@@ -630,6 +680,35 @@ variable : ID
 				fprintf(errorout, "Error at line %d: %s not an array\n\n", lineCount, $1->getName().c_str());
 				fprintf(logout, "Error at line %d: %s not an array\n\n", lineCount, $1->getName().c_str());
 				$$ = new SymbolInfo($1->getName()+"["+$3->getName()+"]","variable");
+			}
+		}
+		fprintf(logout, "Line %d: variable : ID LTHIRD expression RTHIRD\n\n%s\n\n", lineCount, $$->getName().c_str());
+		// deleete $1;
+		// deleete $3;
+	 }
+	 | ID LTHIRD RTHIRD 
+	 {
+		SymbolInfo *temp = table.lookUpSymbol($1->getName());
+		if(temp==nullptr){
+			errorCount++;
+			fprintf(errorout, "Error at line %d: Undeclared variable %s\n\n", lineCount, $1->getName().c_str());
+			fprintf(logout, "Error at line %d: Undeclared variable %s\n\n", lineCount, $1->getName().c_str());
+			$$ = new SymbolInfo($1->getName()+"[]","variable");
+		}
+		else {
+			string varType = temp->getType();
+			if ((varType.find("[") != string::npos) || (varType.find("]") != string::npos)) { // is an array
+				// handle [] error
+				errorCount++;
+				fprintf(errorout, "Error at line %d: Array size undefined\n\n", lineCount);
+				fprintf(logout, "Error at line %d: Array size undefined\n\n", lineCount);
+				$$ = new SymbolInfo($1->getName()+"[]", getArrayName(varType));
+			} 
+			else { 
+				errorCount++;
+				fprintf(errorout, "Error at line %d: %s not an array\n\n", lineCount, $1->getName().c_str());
+				fprintf(logout, "Error at line %d: %s not an array\n\n", lineCount, $1->getName().c_str());
+				$$ = new SymbolInfo($1->getName()+"[]","variable");
 			}
 		}
 		fprintf(logout, "Line %d: variable : ID LTHIRD expression RTHIRD\n\n%s\n\n", lineCount, $$->getName().c_str());
