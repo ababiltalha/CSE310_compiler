@@ -1,0 +1,179 @@
+Line 1: type_specifier : INT
+
+int
+
+Line 1: declaration_list : ID
+
+b
+
+Line 1: var_declaration : type_specifier declaration_list SEMICOLON
+
+int b;
+
+Line 1: unit : var_declaration
+
+int b;
+
+
+Line 1: program : unit
+
+int b;
+
+
+Line 2: type_specifier : INT
+
+int
+
+Line 3: type_specifier : INT
+
+int
+
+Line 3: declaration_list : ID
+
+a
+
+Line 3: declaration_list : declaration_list COMMA ID
+
+a,b
+
+Line 3: var_declaration : type_specifier declaration_list SEMICOLON
+
+int a,b;
+
+Line 3: statement : var_declaration
+
+int a,b;
+
+Line 3: statements : statement
+
+int a,b;
+
+Line 4: type_specifier : INT
+
+int
+
+Line 4: declaration_list : ID LTHIRD CONST_INT RTHIRD
+
+c[3]
+
+Line 4: var_declaration : type_specifier declaration_list SEMICOLON
+
+int c[3];
+
+Line 4: statement : var_declaration
+
+int c[3];
+
+Line 4: statements : statements statement
+
+int a,b;
+int c[3];
+
+Line 5: variable : ID
+
+a
+
+Line 5: factor : variable
+
+a
+
+Line 5: unary_expression : factor
+
+a
+
+Line 5: term : unary_expression
+
+a
+
+Line 5: simple_expression : term
+
+a
+
+Line 5: rel_expression : simple_expression
+
+a
+
+Line 5: logic_expression : rel_expression
+
+a
+
+Line 5: expression : logic_expression
+
+a
+
+Line 5: statement : RETURN expression SEMICOLON
+
+return a;
+
+Line 5: statements : statements statement
+
+int a,b;
+int c[3];
+return a;
+
+Line 6: compound_statement : LCURL statements RCURL
+
+{
+int a,b;
+int c[3];
+return a;
+}
+
+
+
+
+ScopeTable # 1.1
+ 7 --> < a , ID >-2
+ 8 --> < b , ID >-4
+ 9 --> < c , ID >-10
+
+ScopeTable # 1
+ 8 --> < b , ID >0
+ 12 --> < f , ID >0
+
+
+
+Line 6: func_definition : type_specifier ID LPAREN RPAREN compound_statement
+
+int f(){
+int a,b;
+int c[3];
+return a;
+}
+
+
+
+
+Line 6: unit : func_definition
+
+int f(){
+int a,b;
+int c[3];
+return a;
+}
+
+
+
+
+Line 6: program : program unit
+
+int b;
+int f(){
+int a,b;
+int c[3];
+return a;
+}
+
+
+
+
+Line 9: start : program
+
+
+ScopeTable # 1
+ 8 --> < b , ID >0
+ 12 --> < f , ID >0
+
+
+Total lines: 9
+Total errors: 0

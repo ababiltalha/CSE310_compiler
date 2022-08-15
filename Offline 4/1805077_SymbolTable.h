@@ -24,6 +24,7 @@ public:
 
     bool insertSymbolInfo(SymbolInfo* s); 
 
+    string getCurrentScopeId();
 
 };
 

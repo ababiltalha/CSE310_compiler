@@ -9,6 +9,10 @@ private:
     string name;
     string type;
     SymbolInfo* next;
+// Offline 4
+    int stackOffset;
+    string code;
+
 public:
     SymbolInfo(string name, string type);
     ~SymbolInfo();
@@ -19,6 +23,11 @@ public:
     void setType(string type);
     void setNext(SymbolInfo* next);
     friend ostream &operator<<(ostream &output, SymbolInfo &symbol);
+
+    int getStackOffset();
+    void setStackOffset(int offset);
+    string getCode();
+    void setCode(string code); 
 };
 
 #endif

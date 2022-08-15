@@ -104,4 +104,8 @@ string SymbolTable::printAllScope(){
     return str;
 }
 
+string SymbolTable::getCurrentScopeId(){
+    return this->currentScope->getId();
+}
+
 #endif

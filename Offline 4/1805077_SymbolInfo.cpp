@@ -43,4 +43,17 @@ ostream &operator<<(ostream &output, SymbolInfo &symbol){
     return output;
 }
 
+int SymbolInfo::getStackOffset(){
+    return this->stackOffset;
+}
+void SymbolInfo::setStackOffset(int offset){
+    this->stackOffset= offset;
+}
+string SymbolInfo::getCode(){
+    return this->code;
+}
+void SymbolInfo::setCode(string code){
+    this->code= code;
+}
+
 #endif

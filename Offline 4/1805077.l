@@ -153,7 +153,7 @@ EMPTY_CHAR \'\'
 "case" {return CASE;}
 "default" {return DEFAULT;}
 "continue" {return CONTINUE;}
-"printf"	{return PRINTLN;}
+"println"	{return PRINTLN;}
 
 {CONST_INT} {
 	// fprintf(tokenout,"<CONST_INT, %s> ", yytext);

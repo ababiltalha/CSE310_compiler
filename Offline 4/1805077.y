@@ -10,6 +10,56 @@ FILE *fp, *logout, *errorout;
 extern int lineCount;
 extern int errorCount;
 
+// Offline 4 code
+FILE *asmout;
+int tempCount=0;
+int labelCount=0;
+int currentOffset=0; // offset from BP of that particular variable
+bool isMainDefined= false;
+
+
+string newTemp() {
+	return "temp_"+to_string(tempCount++);
+}
+
+string newLabel() {
+	return "label_"+to_string(labelCount++);
+}
+
+void printUtilFunctions() {
+	fprintf(asmout, "\nPRINT PROC ; PRINTS A WORD INTEGER IN AX\n\
+    LEA SI, NUMBER_STRING ; IS 00000\n\
+    ADD SI, 5 ; START FROM ONE'S DIGIT\n\
+    CMP AX, 0\n\
+    JNL PRINT_LOOP\n\
+    MOV FLAG, 1\n\
+    NEG AX\n\
+    PRINT_LOOP:\n\
+        DEC SI\n\
+        MOV DX, 0 ; DX:AX = 0000:AX\n\
+        MOV CX, 10\n\
+        DIV CX\n\
+        ADD DL, '0'\n\
+        MOV [SI], DL\n\
+        CMP AX, 0\n\
+        JNE PRINT_LOOP\n\
+    CMP FLAG, 0\n\
+    JNG NOT_NEGATIVE\n\
+    MOV AH, 2\n\
+    MOV DL, 45\n\
+    INT 21H\n\
+    MOV FLAG, 0\n\
+	NOT_NEGATIVE:\n\
+    MOV DX, SI\n\
+    MOV AH, 9\n\
+    INT 21H\n\
+	MOV DX, OFFSET NL   ; NEWLINE\n\
+    MOV AH, 9\n\
+    INT 21H\n\
+    RET\n\
+PRINT ENDP\n");
+}
+
 SymbolTable table(30);
 vector<string> v;
 vector<string> parameterTypeList;
@@ -29,6 +79,15 @@ string getArrayName(const string s){
 	string item;
 	while(getline(ss, item, '['))
 		return item;
+}
+
+int getArraySize(const string s){
+	stringstream ss(s);
+	string item;
+	if(getline(ss, item, '[')){}
+	while(getline(ss, item, ']'))
+		return stoi(item);
+    return 0;
 }
 
 void splitParameterTypeList(const string s, char delim) {
@@ -100,9 +159,15 @@ void yyerror(char *s)
 
 %%
 
-start : program
-	{
+start : {
+		fprintf(asmout, ".MODEL SMALL\n");
+		fprintf(asmout, ".STACK 100H\n");
+		fprintf(asmout, ".DATA\n\tFLAG DB 0\n\tNL DB 13,10,\"$\"\n\tNUMBER_STRING DB \"00000$\" \n");
+		fprintf(asmout, ".CODE\n");
+	} program {
 		fprintf(logout, "Line %d: start : program\n\n", lineCount);
+		printUtilFunctions();
+		if(isMainDefined) fprintf(asmout, "END MAIN\n");
 	}
 	;
 
@@ -249,7 +314,7 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN
 			fprintf(logout, "Line %d: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement\n\n%s\n\n\n", lineCount, $$->getName().c_str());
 		}
 		| type_specifier ID LPAREN RPAREN
-		{
+		{	// set isMainDefined as true when ID.name == "main"
 			string returnType = $1->getName();
 			returnTypeToMatch= returnType;
 			string funcName = $2->getName();
@@ -379,11 +444,25 @@ var_declaration : type_specifier declaration_list SEMICOLON
 				for (string var : v){
 					if ((var.find("[") != string::npos) || (var.find("]") != string::npos)) {
 						string arrayName = getArrayName(var);
+						int arraySize = getArraySize(var);
 						bool newSymbol = table.insertSymbol(arrayName, varType+"[]");
 						if(!newSymbol){
 							errorCount++;
 							fprintf(errorout, "Error at line %d: Multiple declaration of %s\n\n", lineCount, arrayName.c_str());
 							fprintf(logout, "Error at line %d: Multiple declaration of %s\n\n", lineCount, arrayName.c_str());
+						}
+						else {
+							if("1"==table.getCurrentScopeId()) { // global
+								fprintf(asmout, "%s DW %d DUP(?)\n", arrayName.c_str(), arraySize);
+							}
+							else{
+								for(int j=0; j<arraySize; j++){
+									fprintf(asmout, "PUSH AX\n");
+									currentOffset-=2;
+								}
+								SymbolInfo* temp= table.lookUpSymbol(arrayName);
+								temp->setStackOffset(currentOffset);
+							}
 						}
 					}
 
@@ -394,6 +473,17 @@ var_declaration : type_specifier declaration_list SEMICOLON
 							fprintf(errorout, "Error at line %d: Multiple declaration of %s\n\n", lineCount, var.c_str());
 							fprintf(logout, "Error at line %d: Multiple declaration of %s\n\n", lineCount, var.c_str());
 						}
+						else {
+							if("1"==table.getCurrentScopeId()) { // global
+								fprintf(asmout, "%s DW ?\n", var.c_str());
+							}
+							else{
+								fprintf(asmout, "PUSH AX\n");
+								currentOffset-=2;
+								SymbolInfo* temp= table.lookUpSymbol(var);
+								temp->setStackOffset(currentOffset);
+							}
+						}
 					}
 
 
@@ -401,7 +491,15 @@ var_declaration : type_specifier declaration_list SEMICOLON
 				clearVector();
 			}
 
+
+
 			$$ = new SymbolInfo($1->getName()+" "+$2->getName()+";", "var_declaration");
+
+			// fprintf(asmout, "PUSH AX");
+
+
+
+
 			fprintf(logout, "Line %d: var_declaration : type_specifier declaration_list SEMICOLON\n\n%s\n\n", lineCount, $$->getName().c_str());
 		}
  		 ;
@@ -564,7 +662,7 @@ statement : var_declaration
 			fprintf(errorout, "Error at line %d: Undeclared variable %s\n\n", lineCount, $3->getName().c_str());
 			fprintf(logout, "Error at line %d: Undeclared variable %s\n\n", lineCount, $3->getName().c_str());
 		}
-		else $$ = new SymbolInfo("printf("+$3->getName()+");", "statement");
+		else $$ = new SymbolInfo("println("+$3->getName()+");", "statement");
 		fprintf(logout, "Line %d: statement : PRINTLN LPAREN ID RPAREN SEMICOLON\n\n%s\n\n", lineCount, $$->getName().c_str());
 		
 	  }
@@ -955,9 +1053,12 @@ int main(int argc,char *argv[])
 	fclose(logout);
 	errorout= fopen(argv[3],"w");
 	fclose(errorout);
+	asmout= fopen("code.asm","w");
+	fclose(asmout);
 	
 	logout= fopen(argv[2],"a");
 	errorout= fopen(argv[3],"a");
+	asmout= fopen("code.asm","a");
 	
 
 	yyin=fp;
@@ -969,6 +1070,7 @@ int main(int argc,char *argv[])
 
 	fclose(logout);
 	fclose(errorout);
+	fclose(asmout);
 	
 	return 0;
 }
