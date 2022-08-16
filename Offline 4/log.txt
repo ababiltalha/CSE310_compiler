@@ -24,29 +24,33 @@ Line 2: type_specifier : INT
 
 int
 
+Line 2: type_specifier : INT
+
+int
+
+Line 2: parameter_list : type_specifier ID
+
+int a
+
 Line 3: type_specifier : INT
 
 int
 
 Line 3: declaration_list : ID
 
-a
-
-Line 3: declaration_list : declaration_list COMMA ID
-
-a,b
+b
 
 Line 3: var_declaration : type_specifier declaration_list SEMICOLON
 
-int a,b;
+int b;
 
 Line 3: statement : var_declaration
 
-int a,b;
+int b;
 
 Line 3: statements : statement
 
-int a,b;
+int b;
 
 Line 4: type_specifier : INT
 
@@ -66,7 +70,7 @@ int c[3];
 
 Line 4: statements : statements statement
 
-int a,b;
+int b;
 int c[3];
 
 Line 5: variable : ID
@@ -107,14 +111,14 @@ return a;
 
 Line 5: statements : statements statement
 
-int a,b;
+int b;
 int c[3];
 return a;
 
 Line 6: compound_statement : LCURL statements RCURL
 
 {
-int a,b;
+int b;
 int c[3];
 return a;
 }
@@ -123,9 +127,9 @@ return a;
 
 
 ScopeTable # 1.1
- 7 --> < a , ID >-2
- 8 --> < b , ID >-4
- 9 --> < c , ID >-10
+ 7 --> < a , ID >4
+ 8 --> < b , ID >-2
+ 9 --> < c , ID >-8
 
 ScopeTable # 1
  8 --> < b , ID >0
@@ -133,10 +137,10 @@ ScopeTable # 1
 
 
 
-Line 6: func_definition : type_specifier ID LPAREN RPAREN compound_statement
+Line 6: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement
 
-int f(){
-int a,b;
+int f(int a){
+int b;
 int c[3];
 return a;
 }
@@ -146,8 +150,8 @@ return a;
 
 Line 6: unit : func_definition
 
-int f(){
-int a,b;
+int f(int a){
+int b;
 int c[3];
 return a;
 }
@@ -158,8 +162,8 @@ return a;
 Line 6: program : program unit
 
 int b;
-int f(){
-int a,b;
+int f(int a){
+int b;
 int c[3];
 return a;
 }
@@ -167,13 +171,107 @@ return a;
 
 
 
-Line 9: start : program
+Line 8: type_specifier : INT
 
+int
+
+Line 9: factor : CONST_INT
+
+0
+
+Line 9: unary_expression : factor
+
+0
+
+Line 9: term : unary_expression
+
+0
+
+Line 9: simple_expression : term
+
+0
+
+Line 9: rel_expression : simple_expression
+
+0
+
+Line 9: logic_expression : rel_expression
+
+0
+
+Line 9: expression : logic_expression
+
+0
+
+Line 9: statement : RETURN expression SEMICOLON
+
+return 0;
+
+Line 9: statements : statement
+
+return 0;
+
+Line 10: compound_statement : LCURL statements RCURL
+
+{
+return 0;
+}
+
+
+
+
+ScopeTable # 1.2
 
 ScopeTable # 1
+ 7 --> < main , ID >0
  8 --> < b , ID >0
  12 --> < f , ID >0
 
 
-Total lines: 9
+
+Line 10: func_definition : type_specifier ID LPAREN RPAREN compound_statement
+
+int main(){
+return 0;
+}
+
+
+
+
+Line 10: unit : func_definition
+
+int main(){
+return 0;
+}
+
+
+
+
+Line 10: program : program unit
+
+int b;
+int f(int a){
+int b;
+int c[3];
+return a;
+}
+
+
+int main(){
+return 0;
+}
+
+
+
+
+Line 13: start : program
+
+
+ScopeTable # 1
+ 7 --> < main , ID >0
+ 8 --> < b , ID >0
+ 12 --> < f , ID >0
+
+
+Total lines: 13
 Total errors: 0

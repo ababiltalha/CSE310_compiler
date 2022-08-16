@@ -15,8 +15,13 @@ FILE *asmout;
 int tempCount=0;
 int labelCount=0;
 int currentOffset=0; // offset from BP of that particular variable
-bool isMainDefined= false;
+int parameterCount=0;
+bool isMainDefined=false;
+string currentFunc="";
 
+void resetCurrentOffset(){
+	currentOffset=0;
+}
 
 string newTemp() {
 	return "temp_"+to_string(tempCount++);
@@ -161,13 +166,14 @@ void yyerror(char *s)
 
 start : {
 		fprintf(asmout, ".MODEL SMALL\n");
-		fprintf(asmout, ".STACK 100H\n");
-		fprintf(asmout, ".DATA\n\tFLAG DB 0\n\tNL DB 13,10,\"$\"\n\tNUMBER_STRING DB \"00000$\" \n");
-		fprintf(asmout, ".CODE\n");
+		fprintf(asmout, "\n.STACK 100H\n");
+		fprintf(asmout, "\n.DATA\n\tFLAG DB 0\n\tNL DB 13,10,\"$\"\n\tNUMBER_STRING DB \"00000$\" \n");
+		fprintf(asmout, "\n.CODE\n");
 	} program {
 		fprintf(logout, "Line %d: start : program\n\n", lineCount);
 		printUtilFunctions();
 		if(isMainDefined) fprintf(asmout, "END MAIN\n");
+		// error count check and code dissolution
 	}
 	;
 
@@ -255,6 +261,8 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN
 			string funcName = $2->getName();
 			splitParameterTypeList($4->getType(), ',');
 			extractParameterNameList($4->getName(),',');
+
+			currentFunc=funcName;
 			
 			SymbolInfo* temp = table.lookUpSymbol(funcName);
 			if (temp!=nullptr) // exists in symboltable, may or may not be func, decl or defn
@@ -309,15 +317,32 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN
 				table.insertSymbolInfo(f);
 			}
 			;
+
+
+			fprintf(asmout, "\n%s PROC\n", funcName.c_str());
+			fprintf(asmout, "\tPUSH BP\n\tMOV BP, SP\n");
+
+
+			
 		} compound_statement {
 			$$ = new SymbolInfo($1->getName()+" "+$2->getName()+"("+$4->getName()+")"+$7->getName()+"\n","func_definition");
 			fprintf(logout, "Line %d: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement\n\n%s\n\n\n", lineCount, $$->getName().c_str());
+
+			resetCurrentOffset();
+			fprintf(asmout, "%s_EXIT:\n", $2->getName().c_str());
+			fprintf(asmout, "\tPOP BP\n");
+			fprintf(asmout, "\tRET %d\n", 2*parameterCount);
+			fprintf(asmout, "%s ENDP\n", $2->getName().c_str());
+
 		}
 		| type_specifier ID LPAREN RPAREN
 		{	// set isMainDefined as true when ID.name == "main"
 			string returnType = $1->getName();
 			returnTypeToMatch= returnType;
 			string funcName = $2->getName();
+			if(funcName == "main") isMainDefined=true;
+
+			currentFunc=funcName;
 			
 			SymbolInfo* temp = table.lookUpSymbol(funcName);
 			if (temp!=nullptr) // exists in symboltable, may or may not be func, decl or defn
@@ -360,9 +385,26 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN
 				table.insertSymbolInfo(f);
 			}
 			
+			fprintf(asmout, "\n%s PROC\n", funcName.c_str());
+			if(funcName=="main") {
+				fprintf(asmout, "\tMOV AX, @DATA\n\tMOV DS, AX\n");
+			}
+			fprintf(asmout, "PUSH BP\nMOV BP, SP\n");
+
+			
 		} compound_statement {
 			$$ = new SymbolInfo($1->getName()+" "+$2->getName()+"()"+$6->getName()+"\n","func_definition");
 			fprintf(logout, "Line %d: func_definition : type_specifier ID LPAREN RPAREN compound_statement\n\n%s\n\n\n", lineCount, $$->getName().c_str());
+			resetCurrentOffset();
+			fprintf(asmout, "%s_EXIT:\n", $2->getName().c_str());
+			fprintf(asmout, "\tPOP BP\n");
+			if($2->getName()=="main") {
+				fprintf(asmout, "\tMOV AH, 4CH\n\tINT 21H\n");
+			} else {
+				fprintf(asmout, "\tRET\n");
+			}
+
+			fprintf(asmout, "%s ENDP\n", $2->getName().c_str());
 		}
  		;				
 
@@ -420,8 +462,11 @@ enter_scope :
 					fprintf(logout, "Error at line %d: Parameters name not given in function definition\n\n", lineCount);
 				}
 				else if(parameterTypeList.size()>0){
+					parameterCount= parameterTypeList.size();
 					for(int i=0; i<parameterTypeList.size(); i++){
-						table.insertSymbol(parameterNameList[i], parameterTypeList[i]);
+						SymbolInfo* tempSymbol= new SymbolInfo(parameterNameList[i], parameterTypeList[i]);
+						tempSymbol->setStackOffset(i*2+4); // 2 for BP, 2 for ret address
+						table.insertSymbolInfo(tempSymbol);
 					}
 				}
 				clearParameterNameList();
@@ -654,9 +699,9 @@ statement : var_declaration
 		
 	  }
 	  | PRINTLN LPAREN ID RPAREN SEMICOLON
-	  {
+	  { // move to AX from stack 
 		SymbolInfo *temp = table.lookUpSymbol($3->getName());
-		//handle undeclared variable error
+		// handle undeclared variable error
 		if(temp==nullptr){
 			errorCount++;
 			fprintf(errorout, "Error at line %d: Undeclared variable %s\n\n", lineCount, $3->getName().c_str());
@@ -667,7 +712,7 @@ statement : var_declaration
 		
 	  }
 	  | RETURN expression SEMICOLON
-	  {
+	  { //jump to label of current function
 		// check return type in func_defn and decl
 		if($2->getType()=="expression") {
 			errorCount++;
@@ -685,6 +730,7 @@ statement : var_declaration
 		
 		$$ = new SymbolInfo("return "+$2->getName()+";", "statement");
 		fprintf(logout, "Line %d: statement : RETURN expression SEMICOLON\n\n%s\n\n", lineCount, $$->getName().c_str());
+		fprintf(asmout, "\tJMP %s_EXIT\n", currentFunc.c_str());
 		
 	  }
 	  ;
