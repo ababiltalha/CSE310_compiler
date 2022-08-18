@@ -1,6 +1,6 @@
 .MODEL SMALL
 
-.STACK 100H
+.STACK 400H
 
 .DATA
 	FLAG DB 0
@@ -46,7 +46,7 @@ PUSH AX ; b called
 PUSH 1
 PUSH 5
 POP AX
-POP BX
+POP BX ; left side value
 CMP BX, AX ; evaluating 1<5
 JNL label_1
 PUSH 1 ; if 1<5 is true
@@ -61,48 +61,93 @@ PUSH 1
 POP BX ; popped index expr 1
 SHL BX, 1
 ADD BX, -10
-ADD BX, BP
-MOV AX, [BX]
+;ADD BX, BP
+PUSH BP
+ADD BP, BX
+MOV AX, [BP]
+POP BP
+;MOV AX, [BX]
 PUSH AX ; value of c[1]
 PUSH BX ; index 1
 PUSH 2
 POP AX ; r-val of assignop 2
 POP BX
-MOV [BX], AX ; assigning 2 to c[1]
+;MOV [BX], AX
+PUSH BP
+ADD BP, BX
+MOV [BP], AX
+POP BP ; assigning 2 to c[1]
 POP AX
 MOV AX, -2[BP]
 PUSH AX ; a called
 MOV AX, -4[BP]
 PUSH AX ; b called
+POP BX
+POP AX ; left side value
+CMP AX, 0
+JE label_3
+CMP BX, 0
+JE label_3
+PUSH 1
+JMP label_2
+label_3:
+PUSH 0 ; total false
+label_2:
+POP AX ; expr in AX
+CMP AX, 0 ; checking expr
+JE label_4
 PUSH 1
 POP BX ; popped index expr 1
 SHL BX, 1
 ADD BX, -10
-ADD BX, BP
-MOV AX, [BX]
+;ADD BX, BP
+PUSH BP
+ADD BP, BX
+MOV AX, [BP]
+POP BP
+;MOV AX, [BX]
 PUSH AX ; value of c[1]
 PUSH BX ; index 1
 POP AX
+JMP label_5
+label_4: ; else label
 PUSH 0
 POP BX ; popped index expr 0
 SHL BX, 1
 ADD BX, -10
-ADD BX, BP
-MOV AX, [BX]
+;ADD BX, BP
+PUSH BP
+ADD BP, BX
+MOV AX, [BP]
+POP BP
+;MOV AX, [BX]
 PUSH AX ; value of c[0]
 PUSH BX ; index 0
 PUSH 1
 POP BX ; popped index expr 1
 SHL BX, 1
 ADD BX, -10
-ADD BX, BP
-MOV AX, [BX]
+;ADD BX, BP
+PUSH BP
+ADD BP, BX
+MOV AX, [BP]
+POP BP
+;MOV AX, [BX]
 PUSH AX ; value of c[1]
 PUSH BX ; index 1
 POP AX ; r-val of assignop c[1]
 POP BX
-MOV [BX], AX ; assigning c[1] to c[0]
+;MOV [BX], AX
+PUSH BP
+ADD BP, BX
+MOV [BP], AX
+POP BP ; assigning c[1] to c[0]
 POP AX
+label_5: ; end if label
+MOV AX, -2[BP]
+CALL PRINT ; argument a in AX
+MOV AX, -4[BP]
+CALL PRINT ; argument b in AX
 main_EXIT:
 	POP BP
 	MOV AH, 4CH

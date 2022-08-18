@@ -19,6 +19,9 @@ int parameterCount=0;
 bool isMainDefined=false;
 string currentFunc="";
 
+string labelElse="aaaaaaaaa";
+string labelEndIf="bbbbbbbbbb";
+
 void resetCurrentOffset(){
 	currentOffset=0;
 }
@@ -157,7 +160,7 @@ void yyerror(char *s)
 }
 %token IF ELSE FOR WHILE INT FLOAT DOUBLE CHAR RETURN VOID PRINTLN DO BREAK SWITCH CASE DEFAULT CONTINUE ASSIGNOP NOT SEMICOLON COMMA LPAREN RPAREN LCURL RCURL LTHIRD RTHIRD INCOP DECOP
 %token <symbol> ID ADDOP MULOP RELOP LOGICOP CONST_INT CONST_FLOAT
-%type <symbol> declaration_list type_specifier var_declaration unit program func_declaration func_definition parameter_list factor variable expression logic_expression argument_list arguments rel_expression simple_expression term unary_expression statement statements compound_statement expression_statement
+%type <symbol> declaration_list type_specifier var_declaration unit program func_declaration func_definition parameter_list factor variable expression logic_expression argument_list arguments rel_expression simple_expression term unary_expression statement statements compound_statement expression_statement if_expr
 
 %nonassoc LOWER_THAN_ELSE
 %nonassoc ELSE
@@ -166,7 +169,7 @@ void yyerror(char *s)
 
 start : {
 		fprintf(asmout, ".MODEL SMALL\n");
-		fprintf(asmout, "\n.STACK 100H\n");
+		fprintf(asmout, "\n.STACK 400H\n");
 		fprintf(asmout, "\n.DATA\n\tFLAG DB 0\n\tNL DB 13,10,\"$\"\n\tNUMBER_STRING DB \"00000$\" \n");
 		fprintf(asmout, "\n.CODE\n");
 	} program {
@@ -680,17 +683,21 @@ statement : var_declaration
 		fprintf(logout, "Line %d: statement : FOR LPAREN expression_statement expression_statement expression RPAREN statement\n\n%s\n\n", lineCount, $$->getName().c_str());
 		
 	  }
-	  | IF LPAREN expression RPAREN statement %prec LOWER_THAN_ELSE
+	  | if_expr statement %prec LOWER_THAN_ELSE
 	  {
-		$$ = new SymbolInfo("if("+$3->getName()+")"+$5->getName(), "statement");
+		$$ = new SymbolInfo($1->getName()+$2->getName(), "statement");
 		fprintf(logout, "Line %d: statement : IF LPAREN expression RPAREN statement\n\n%s\n\n", lineCount, $$->getName().c_str());
-		
+		fprintf(asmout, "%s: ; end if label\n", labelElse.c_str());
 	  }
-	  | IF LPAREN expression RPAREN statement ELSE statement
+	  | if_expr statement ELSE {
+		labelEndIf= newLabel();
+		fprintf(asmout, "JMP %s\n", labelEndIf.c_str());
+		fprintf(asmout, "%s: ; else label\n", labelElse.c_str());
+	  } statement
 	  {
-		$$ = new SymbolInfo("if("+$3->getName()+")"+$5->getName()+ "else\n"+$7->getName(), "statement");
+		$$ = new SymbolInfo($1->getName()+$2->getName()+"else\n"+$5->getName(), "statement");
 		fprintf(logout, "Line %d: statement : IF LPAREN expression RPAREN statement ELSE statement\n\n%s\n\n", lineCount, $$->getName().c_str());
-		
+		fprintf(asmout, "%s: ; end if label\n", labelEndIf.c_str());
 	  }
 
 	  | WHILE LPAREN expression RPAREN statement
@@ -710,7 +717,7 @@ statement : var_declaration
 		}
 		else $$ = new SymbolInfo("println("+$3->getName()+");", "statement");
 		fprintf(logout, "Line %d: statement : PRINTLN LPAREN ID RPAREN SEMICOLON\n\n%s\n\n", lineCount, $$->getName().c_str());
-		
+		fprintf(asmout, "MOV AX, %d[BP]\nCALL PRINT ; argument %s in AX\n", temp->getStackOffset(), temp->getName().c_str());
 	  }
 	  | RETURN expression SEMICOLON
 	  { // jump to label of current function
@@ -737,7 +744,15 @@ statement : var_declaration
 		
 	  }
 	  ;
-	  
+
+if_expr :	IF LPAREN expression RPAREN 
+	{
+		labelElse= newLabel();
+		fprintf(asmout, "POP AX ; expr in AX\nCMP AX, 0 ; checking expr\n");
+		fprintf(asmout, "JE %s\n", labelElse.c_str());
+		$$= new SymbolInfo("if("+$3->getName()+")", "statement");
+	} 	
+
 expression_statement 	: SEMICOLON
 			{
 				$$ = new SymbolInfo(";", "expression_statement");
@@ -794,7 +809,7 @@ variable : ID
 				if(temp->isGlobal()) {
 					// fprintf(asmout, "LEA SI, %s\nMOV AX, %s[SI]\n ; %s called\n", temp->getName().c_str(), temp->getName().c_str()); //! handle global array index calc
 				} else {
-					fprintf(asmout, "POP BX ; popped index expr %s\nSHL BX, 1\nADD BX, %d\nADD BX, BP\nMOV AX, [BX]\nPUSH AX ; value of %s[%s]\nPUSH BX ; index %s\n",
+					fprintf(asmout, "POP BX ; popped index expr %s\nSHL BX, 1\nADD BX, %d\n;ADD BX, BP\nPUSH BP\nADD BP, BX\nMOV AX, [BP]\nPOP BP\n;MOV AX, [BX]\nPUSH AX ; value of %s[%s]\nPUSH BX ; index %s\n",
 						$3->getName().c_str(), temp->getStackOffset(), temp->getName().c_str(), $3->getName().c_str(), $3->getName().c_str());
 				}
 				$$ = new SymbolInfo($1->getName()+"["+$3->getName()+"]", getArrayName(varType));
@@ -872,7 +887,7 @@ expression : logic_expression
 			fprintf(asmout, "POP AX ; r-val of assignop %s\n", $3->getName().c_str());
 			if (varName.find("[") != string::npos){
 				fprintf(asmout, "POP BX\n");
-				fprintf(asmout, "MOV [BX], AX ; assigning %s to %s\n", $3->getName().c_str(), $1->getName().c_str());
+				fprintf(asmout, ";MOV [BX], AX\nPUSH BP\nADD BP, BX\nMOV [BP], AX\nPOP BP ; assigning %s to %s\n", $3->getName().c_str(), $1->getName().c_str());
 			}
 			else {
 				fprintf(asmout, "MOV %d[BP], AX ; assigning %s to %s\n", $1->getStackOffset(), $3->getName().c_str(), $1->getName().c_str());
@@ -902,10 +917,19 @@ logic_expression : rel_expression
 			fprintf(logout, "Line %d: logic_expression : rel_expression LOGICOP rel_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
 			
 			// Offline 4 code
-			fprintf(asmout, "POP BX\nPOP AX ; left side value\nCMP BX, AX ; evaluating %s\n", $$->getName().c_str());
+			fprintf(asmout, "POP BX\nPOP AX ; left side value\n");
 			string labelIfTrue=newLabel();
 			string labelIfFalse=newLabel(); 
 
+			if($2->getName()=="&&"){
+				fprintf(asmout, "CMP AX, 0\nJE %s\nCMP BX, 0\nJE %s\nPUSH 1\nJMP %s\n", labelIfFalse.c_str(), labelIfFalse.c_str(), labelIfTrue.c_str());
+				fprintf(asmout, "%s:\nPUSH 0 ; total false\n%s:\n", labelIfFalse.c_str(), labelIfTrue.c_str());
+			
+			} else if($2->getName()=="||"){
+				fprintf(asmout, "CMP AX, 0\nJNE %s\nCMP BX, 0\nJNE %s\nPUSH 0\nJMP %s\n", labelIfFalse.c_str(), labelIfFalse.c_str(), labelIfTrue.c_str());
+				fprintf(asmout, "%s:\nPUSH 1 ; total false\n%s:\n", labelIfFalse.c_str(), labelIfTrue.c_str());
+			
+			} 
 
 		}
 		 ;
