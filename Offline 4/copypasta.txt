@@ -1,0 +1,2 @@
+fprintf(asmout, "\t;line no: %d\n", lineCount);
+

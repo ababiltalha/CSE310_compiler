@@ -12,6 +12,8 @@ private:
 // Offline 4
     int stackOffset;
     string code;
+    string address;
+    bool isGlobalBool;
 
 public:
     SymbolInfo(string name, string type);
@@ -28,6 +30,10 @@ public:
     void setStackOffset(int offset);
     string getCode();
     void setCode(string code); 
+    string getAddress();
+    void setAddress(string address);
+    bool isGlobal();
+    void setGlobal(bool global);
 };
 
 #endif

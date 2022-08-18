@@ -4,7 +4,7 @@
 #include "1805077_SymbolInfo.h"
 
 SymbolInfo::SymbolInfo(string name, string type)
-    :name{name}, type{type}, next{nullptr}
+    :name{name}, type{type}, next{nullptr}, isGlobalBool{true}
 {}
 
 SymbolInfo::~SymbolInfo(){
@@ -54,6 +54,19 @@ string SymbolInfo::getCode(){
 }
 void SymbolInfo::setCode(string code){
     this->code= code;
+}
+
+string SymbolInfo::getAddress(){
+    return this->address;
+}
+void SymbolInfo::setAddress(string address){
+    this->address= address;
+}
+bool SymbolInfo::isGlobal(){
+    return this->isGlobalBool;
+}
+void SymbolInfo::setGlobal(bool global){
+    this->isGlobalBool= global;
 }
 
 #endif

@@ -33,7 +33,7 @@ string newLabel() {
 
 void printUtilFunctions() {
 	fprintf(asmout, "\nPRINT PROC ; PRINTS A WORD INTEGER IN AX\n\
-    LEA SI, NUMBER_STRING ; IS 00000\n\
+	LEA SI, NUMBER_STRING ; IS 00000\n\
     ADD SI, 5 ; START FROM ONE'S DIGIT\n\
     CMP AX, 0\n\
     JNL PRINT_LOOP\n\
@@ -466,6 +466,8 @@ enter_scope :
 					for(int i=0; i<parameterTypeList.size(); i++){
 						SymbolInfo* tempSymbol= new SymbolInfo(parameterNameList[i], parameterTypeList[i]);
 						tempSymbol->setStackOffset(i*2+4); // 2 for BP, 2 for ret address
+						tempSymbol->setGlobal(false);
+						// fprintf(asmout, "PUSH AX\n");
 						table.insertSymbolInfo(tempSymbol);
 					}
 				}
@@ -498,15 +500,16 @@ var_declaration : type_specifier declaration_list SEMICOLON
 						}
 						else {
 							if("1"==table.getCurrentScopeId()) { // global
-								fprintf(asmout, "%s DW %d DUP(?)\n", arrayName.c_str(), arraySize);
+								fprintf(asmout, "%s DW %d DUP(?) ; %s[%d] decl\n", arrayName.c_str(), arraySize, arrayName.c_str(), arraySize);
 							}
 							else{
 								for(int j=0; j<arraySize; j++){
-									fprintf(asmout, "PUSH AX\n");
+									fprintf(asmout, "PUSH AX ; %s[%d] decl\n", arrayName.c_str(), arraySize-1-j);
 									currentOffset-=2;
 								}
 								SymbolInfo* temp= table.lookUpSymbol(arrayName);
-								temp->setStackOffset(currentOffset);
+								temp->setStackOffset(currentOffset); // arrayName[arraySize - 1] is at currentOffset[BP]
+								temp->setGlobal(false);
 							}
 						}
 					}
@@ -520,13 +523,14 @@ var_declaration : type_specifier declaration_list SEMICOLON
 						}
 						else {
 							if("1"==table.getCurrentScopeId()) { // global
-								fprintf(asmout, "%s DW ?\n", var.c_str());
+								fprintf(asmout, "%s DW ? ; %s decl\n", var.c_str(), var.c_str());
 							}
 							else{
-								fprintf(asmout, "PUSH AX\n");
+								fprintf(asmout, "PUSH AX ; %s decl\n", var.c_str());
 								currentOffset-=2;
 								SymbolInfo* temp= table.lookUpSymbol(var);
 								temp->setStackOffset(currentOffset);
+								temp->setGlobal(false);
 							}
 						}
 					}
@@ -540,10 +544,7 @@ var_declaration : type_specifier declaration_list SEMICOLON
 
 			$$ = new SymbolInfo($1->getName()+" "+$2->getName()+";", "var_declaration");
 
-			// fprintf(asmout, "PUSH AX");
-
-
-
+			// fprintf(asmout, "\t;line no: %d\n", lineCount);
 
 			fprintf(logout, "Line %d: var_declaration : type_specifier declaration_list SEMICOLON\n\n%s\n\n", lineCount, $$->getName().c_str());
 		}
@@ -712,7 +713,8 @@ statement : var_declaration
 		
 	  }
 	  | RETURN expression SEMICOLON
-	  { //jump to label of current function
+	  { // jump to label of current function
+	  	//! return value should be in AX
 		// check return type in func_defn and decl
 		if($2->getType()=="expression") {
 			errorCount++;
@@ -730,6 +732,7 @@ statement : var_declaration
 		
 		$$ = new SymbolInfo("return "+$2->getName()+";", "statement");
 		fprintf(logout, "Line %d: statement : RETURN expression SEMICOLON\n\n%s\n\n", lineCount, $$->getName().c_str());
+		fprintf(asmout, "POP AX\n");
 		fprintf(asmout, "\tJMP %s_EXIT\n", currentFunc.c_str());
 		
 	  }
@@ -744,6 +747,7 @@ expression_statement 	: SEMICOLON
 			{
 				$$ = new SymbolInfo($1->getName()+";", "expression_statement");
 				fprintf(logout, "Line %d: expression_statement : expression SEMICOLON\n\n%s\n\n", lineCount, $$->getName().c_str());
+				fprintf(asmout, "POP AX\n");
 			}
 			;
 	  
@@ -757,7 +761,15 @@ variable : ID
 			fprintf(logout, "Error at line %d: Undeclared variable %s\n\n", lineCount, $1->getName().c_str());
 			$$ = new SymbolInfo($1->getName(),"variable");
 		}
-		else $$ = new SymbolInfo(temp->getName(), temp->getType());
+		else { 
+			if(temp->isGlobal()) {
+				fprintf(asmout, "MOV AX, %s\nPUSH AX ; %s called\n", temp->getName().c_str(), temp->getName().c_str());
+			} else {
+				fprintf(asmout, "MOV AX, %d[BP]\nPUSH AX ; %s called\n", temp->getStackOffset(), temp->getName().c_str());
+			}
+			$$ = new SymbolInfo(temp->getName(), temp->getType());
+			$$->setStackOffset(temp->getStackOffset());
+		}
 		fprintf(logout, "Line %d: variable : ID\n\n%s\n\n", lineCount, $$->getName().c_str());
 		
 	 }
@@ -779,7 +791,14 @@ variable : ID
 					fprintf(errorout, "Error at line %d: Expression inside third brackets not an integer\n\n", lineCount);
 					fprintf(logout, "Error at line %d: Expression inside third brackets not an integer\n\n", lineCount);
 				}
+				if(temp->isGlobal()) {
+					// fprintf(asmout, "LEA SI, %s\nMOV AX, %s[SI]\n ; %s called\n", temp->getName().c_str(), temp->getName().c_str()); //! handle global array index calc
+				} else {
+					fprintf(asmout, "POP BX ; popped index expr %s\nSHL BX, 1\nADD BX, %d\nADD BX, BP\nMOV AX, [BX]\nPUSH AX ; value of %s[%s]\nPUSH BX ; index %s\n",
+						$3->getName().c_str(), temp->getStackOffset(), temp->getName().c_str(), $3->getName().c_str(), $3->getName().c_str());
+				}
 				$$ = new SymbolInfo($1->getName()+"["+$3->getName()+"]", getArrayName(varType));
+				$$->setStackOffset(temp->getStackOffset());
 			} 
 			else { 
 				errorCount++;
@@ -849,6 +868,17 @@ expression : logic_expression
 					fprintf(logout, "Error at line %d: Type Mismatch\n\n", lineCount);
 				}
 			}
+			string varName= $1->getName();
+			fprintf(asmout, "POP AX ; r-val of assignop %s\n", $3->getName().c_str());
+			if (varName.find("[") != string::npos){
+				fprintf(asmout, "POP BX\n");
+				fprintf(asmout, "MOV [BX], AX ; assigning %s to %s\n", $3->getName().c_str(), $1->getName().c_str());
+			}
+			else {
+				fprintf(asmout, "MOV %d[BP], AX ; assigning %s to %s\n", $1->getStackOffset(), $3->getName().c_str(), $1->getName().c_str());
+			}
+			// fprintf(asmout, "POP AX\n");
+			
 			$$ = new SymbolInfo($1->getName()+"="+$3->getName(), "expression");
 			fprintf(logout, "Line %d: expression : variable ASSIGNOP logic_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
 			
@@ -871,6 +901,12 @@ logic_expression : rel_expression
 			$$->setName($1->getName()+$2->getName()+$3->getName());
 			fprintf(logout, "Line %d: logic_expression : rel_expression LOGICOP rel_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
 			
+			// Offline 4 code
+			fprintf(asmout, "POP BX\nPOP AX ; left side value\nCMP BX, AX ; evaluating %s\n", $$->getName().c_str());
+			string labelIfTrue=newLabel();
+			string labelIfFalse=newLabel(); 
+
+
 		}
 		 ;
 			
@@ -889,7 +925,36 @@ rel_expression	: simple_expression
 			$$ = new SymbolInfo("", "int");
 			$$->setName($1->getName()+$2->getName()+$3->getName());
 			fprintf(logout, "Line %d: rel_expression : simple_expression RELOP simple_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
+			// Offline 4 code
+			fprintf(asmout, "POP AX\nPOP BX ; left side value\nCMP BX, AX ; evaluating %s\n", $$->getName().c_str());
+			string labelIfTrue=newLabel();
+			string labelIfFalse=newLabel(); 
+			if($2->getName()=="<"){
+				fprintf(asmout, "JNL %s\nPUSH 1 ; if %s is true\nJMP %s\n", labelIfFalse.c_str(), $$->getName().c_str(), labelIfTrue.c_str());
+				fprintf(asmout, "%s:\nPUSH 0 ; if %s is false\n%s:\n",labelIfFalse.c_str(), $$->getName().c_str(), labelIfTrue.c_str());
 			
+			} else if($2->getName()=="<="){
+				fprintf(asmout, "JNLE %s\nPUSH 1 ; if %s is true\nJMP %s\n", labelIfFalse.c_str(), $$->getName().c_str(), labelIfTrue.c_str());
+				fprintf(asmout, "%s:\nPUSH 0 ; if %s is false\n%s:\n",labelIfFalse.c_str(), $$->getName().c_str(), labelIfTrue.c_str());
+			
+			} else if($2->getName()==">"){
+				fprintf(asmout, "JNG %s\nPUSH 1 ; if %s is true\nJMP %s\n", labelIfFalse.c_str(), $$->getName().c_str(), labelIfTrue.c_str());
+				fprintf(asmout, "%s:\nPUSH 0 ; if %s is false\n%s:\n",labelIfFalse.c_str(), $$->getName().c_str(), labelIfTrue.c_str());
+		
+			} else if($2->getName()==">="){
+				fprintf(asmout, "JNGE %s\nPUSH 1 ; if %s is true\nJMP %s\n", labelIfFalse.c_str(), $$->getName().c_str(), labelIfTrue.c_str());
+				fprintf(asmout, "%s:\nPUSH 0 ; if %s is false\n%s:\n",labelIfFalse.c_str(), $$->getName().c_str(), labelIfTrue.c_str());
+			
+			} else if($2->getName()=="=="){
+				fprintf(asmout, "JNE %s\nPUSH 1 ; if %s is true\nJMP %s\n", labelIfFalse.c_str(), $$->getName().c_str(), labelIfTrue.c_str());
+				fprintf(asmout, "%s:\nPUSH 0 ; if %s is false\n%s:\n",labelIfFalse.c_str(), $$->getName().c_str(), labelIfTrue.c_str());
+			
+			} else if($2->getName()=="!="){
+				fprintf(asmout, "JE %s\nPUSH 1 ; if %s is true\nJMP %s\n", labelIfFalse.c_str(), $$->getName().c_str(), labelIfTrue.c_str());
+				fprintf(asmout, "%s:\nPUSH 0 ; if %s is false\n%s:\n",labelIfFalse.c_str(), $$->getName().c_str(), labelIfTrue.c_str());
+							
+			}
+
 		}
 		;
 				
@@ -899,15 +964,17 @@ simple_expression : term
 			fprintf(logout, "Line %d: simple_expression : term\n\n%s\n\n", lineCount, $$->getName().c_str());
 		}
 		  | simple_expression ADDOP term 
-		{
-			//handle int addition and float addition
+		{	// add and keep in AX
+			// handle int addition and float addition
 			string exprType;
 			if(($1->getType()=="int") && ($3->getType()=="int")) exprType= "int"; 
 			else exprType= "float";
 			if ($1->getType()=="void" || $3->getType()=="void"){
 				exprType= "void";
 			}
-
+			if($2->getName()=="+")
+				fprintf(asmout, "POP AX\nPOP BX\nADD AX, BX\nPUSH AX ; %s+%s pushed\n", $1->getName().c_str(), $3->getName().c_str());
+			else ; //! minus
 			$$ = new SymbolInfo("", exprType);
 			$$->setName($1->getName()+$2->getName()+$3->getName());
 			fprintf(logout, "Line %d: simple_expression : simple_expression ADDOP term\n\n%s\n\n", lineCount, $$->getName().c_str());
@@ -938,12 +1005,20 @@ term :	unary_expression
 				fprintf(errorout, "Error at line %d: Non-Integer operand on modulus operator\n\n", lineCount);
 				fprintf(logout, "Error at line %d: Non-Integer operand on modulus operator\n\n", lineCount);
 			}
+			
 			$$ = new SymbolInfo($1->getName()+$2->getName()+$3->getName(),"int");
+			//Offline 4 code
+			fprintf(asmout, "MOV DX, 0 ; DX:AX = 0000:AX\nPOP BX\nPOP AX\nIDIV BX\nPUSH DX ; remainder of %s is in DX\n", $$->getName().c_str());
+
 		}
 		else {
 			if(($1->getType()=="int")&&($3->getType()=="int"))
 				$$ = new SymbolInfo($1->getName()+$2->getName()+$3->getName(),"int");
 			else $$ = new SymbolInfo($1->getName()+$2->getName()+$3->getName(),"float");
+			// Offline 4 code
+			if($2->getName()=="*")
+				fprintf(asmout, "POP BX\nPOP AX\nIMUL BX\nPUSH AX ; result of %s is in AX, pushed\n", $$->getName().c_str());
+			else ; //! division
 		}
 		fprintf(logout, "Line %d: term : term MULOP unary_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
 		
@@ -1042,6 +1117,7 @@ factor	: variable
 	| CONST_INT 
 	{
 		$$ = $1;
+		fprintf(asmout, "PUSH %s\n", $$->getName().c_str());
 		fprintf(logout, "Line %d: factor : CONST_INT\n\n%s\n\n", lineCount, $$->getName().c_str());
 	}
 	| CONST_FLOAT

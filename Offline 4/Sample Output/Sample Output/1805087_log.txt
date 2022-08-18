@@ -263,22 +263,22 @@ Line 5: logic_expression : rel_expression
 
 Line 5: expression : variable ASSIGNOP logic_expression
 
-c[1]=2
+c=2
 
 Line 5: expression_statement : expression SEMICOLON
 
-c[1]=2;
+c=2;
 
 Line 5: statement : expression_statement
 
-c[1]=2;
+c=2;
 
 Line 5: statements : statements statement
 
 int a,b,c[3];
 a=1*(2+3)%3;
 b=1<5;
-c[1]=2;
+c=2;
 
 Line 6: variable : ID
 
@@ -370,39 +370,39 @@ c[1]
 
 Line 7: factor : variable INCOP
 
-c[1]++
+c++
 
 Line 7: unary_expression : factor
 
-c[1]++
+c++
 
 Line 7: term : unary_expression
 
-c[1]++
+c++
 
 Line 7: simple_expression : term
 
-c[1]++
+c++
 
 Line 7: rel_expression : simple_expression
 
-c[1]++
+c++
 
 Line 7: logic_expression : rel_expression
 
-c[1]++
+c++
 
 Line 7: expression : logic_expression
 
-c[1]++
+c++
 
 Line 7: expression_statement : expression SEMICOLON
 
-c[1]++;
+c++;
 
 Line 7: statement : expression_statement
 
-c[1]++;
+c++;
 
 Line 9: factor : CONST_INT
 
@@ -470,53 +470,53 @@ c[1]
 
 Line 9: factor : variable
 
-c[1]
+c
 
 Line 9: unary_expression : factor
 
-c[1]
+c
 
 Line 9: term : unary_expression
 
-c[1]
+c
 
 Line 9: simple_expression : term
 
-c[1]
+c
 
 Line 9: rel_expression : simple_expression
 
-c[1]
+c
 
 Line 9: logic_expression : rel_expression
 
-c[1]
+c
 
 Line 9: expression : variable ASSIGNOP logic_expression
 
-c[0]=c[1]
+c=c
 
 Line 9: expression_statement : expression SEMICOLON
 
-c[0]=c[1];
+c=c;
 
 Line 9: statement : expression_statement
 
-c[0]=c[1];
+c=c;
 
 Line 9: statement : IF LPAREN expression RPAREN statement ELSE statement
 
-if(a&&b)c[1]++;else
-c[0]=c[1];
+if(a&&b)c++;else
+c=c;
 
 Line 9: statements : statements statement
 
 int a,b,c[3];
 a=1*(2+3)%3;
 b=1<5;
-c[1]=2;
-if(a&&b)c[1]++;else
-c[0]=c[1];
+c=2;
+if(a&&b)c++;else
+c=c;
 
 Line 10: statement : PRINTLN LPAREN ID RPAREN SEMICOLON
 
@@ -527,9 +527,9 @@ Line 10: statements : statements statement
 int a,b,c[3];
 a=1*(2+3)%3;
 b=1<5;
-c[1]=2;
-if(a&&b)c[1]++;else
-c[0]=c[1];
+c=2;
+if(a&&b)c++;else
+c=c;
 println(a);
 
 Line 11: statement : PRINTLN LPAREN ID RPAREN SEMICOLON
@@ -541,9 +541,9 @@ Line 11: statements : statements statement
 int a,b,c[3];
 a=1*(2+3)%3;
 b=1<5;
-c[1]=2;
-if(a&&b)c[1]++;else
-c[0]=c[1];
+c=2;
+if(a&&b)c++;else
+c=c;
 println(a);
 println(b);
 
@@ -553,41 +553,35 @@ Line 12: compound_statement : LCURL statements RCURL
 int a,b,c[3];
 a=1*(2+3)%3;
 b=1<5;
-c[1]=2;
-if(a&&b)c[1]++;else
-c[0]=c[1];
+c=2;
+if(a&&b)c++;else
+c=c;
 println(a);
 println(b);
 }
 
-
-
-
 ScopeTable # 1.1
- 7 --> < a , ID >::stackOffset=-2
- 8 --> < b , ID >::stackOffset=-4
- 9 --> < c , ID >::stackOffset=-10
+ 4 --> < a : ID> 
+ 5 --> < b : ID> 
+ 6 --> < c : ID> 
 
 ScopeTable # 1
- 7 --> < main , ID >::stackOffset=0
+ 16 --> < main : ID> 
 
 
 
-Line 12: func_definition : type_specifier ID LPAREN RPAREN compound_statement
+Line 12: func_definition : type_specifier ID LPAREN  RPAREN compound_statement
 
 int main(){
 int a,b,c[3];
 a=1*(2+3)%3;
 b=1<5;
-c[1]=2;
-if(a&&b)c[1]++;else
-c[0]=c[1];
+c=2;
+if(a&&b)c++;else
+c=c;
 println(a);
 println(b);
 }
-
-
-
 
 Line 12: unit : func_definition
 
@@ -595,15 +589,12 @@ int main(){
 int a,b,c[3];
 a=1*(2+3)%3;
 b=1<5;
-c[1]=2;
-if(a&&b)c[1]++;else
-c[0]=c[1];
+c=2;
+if(a&&b)c++;else
+c=c;
 println(a);
 println(b);
 }
-
-
-
 
 Line 12: program : unit
 
@@ -611,21 +602,17 @@ int main(){
 int a,b,c[3];
 a=1*(2+3)%3;
 b=1<5;
-c[1]=2;
-if(a&&b)c[1]++;else
-c[0]=c[1];
+c=2;
+if(a&&b)c++;else
+c=c;
 println(a);
 println(b);
 }
 
-
-
-
 Line 12: start : program
 
-
 ScopeTable # 1
- 7 --> < main , ID >::stackOffset=0
+ 16 --> < main : ID> 
 
 
 Total lines: 12
