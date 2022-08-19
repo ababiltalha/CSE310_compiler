@@ -51,98 +51,104 @@
         POP BP          ; Restore BP
         RET 2
     PRINT_INTEGER ENDP
-	f PROC
-		;entering function: f
-		PUSH BP	;saving BP
-		MOV BP, SP	;BP = SP (all the offsets in this function are based on this value of BP)
-
-		PUSH BX    ;line no 2: w declared
-		PUSH [BP+-2]	; w pushed
-		PUSH 2
-		PUSH [BP+4]	; a pushed
-		;Multiplication of 2 and a
-		POP BX	;a popped
-		POP AX	;2 popped
-		IMUL BX	;AX = 2 * a
-		PUSH AX	;pushed 2*a
-
-		POP AX	;2*a popped
-		MOV [BP+-2], AX	;assigned 2*a to w
-		POP AX	;Popped out w=2*a
-		PUSH [BP+-2]	; w pushed
-		POP AX	;saving returned value in AX
-		MOV SP, BP	;Restoring SP at the end of function
-		POP BP	;restoring BP at the end of function
-		RET 2
-		PUSH [BP+4]	; a pushed
-		PUSH 9
-		POP AX	;9 popped
-		MOV [BP+4], AX	;assigned 9 to a
-		POP AX	;Popped out a=9
-	f ENDP
-	g PROC
-		;entering function: g
-		PUSH BP	;saving BP
-		MOV BP, SP	;BP = SP (all the offsets in this function are based on this value of BP)
-
-		PUSH BX    ;line no 9: x declared
-		PUSH [BP+-2]	; x pushed
-		PUSH [BP+6]	; a pushed
-		CALL f
-		PUSH AX	;pushed return value of f
-		PUSH [BP+6]	; a pushed
-		;line no 10: ADD f(a) and a
-		POP BX	;a popped
-		POP AX	;f(a) popped
-		ADD AX, BX
-		PUSH AX	;pushed f(a)+a
-
-		PUSH [BP+4]	; b pushed
-		;line no 10: ADD f(a)+a and b
-		POP BX	;b popped
-		POP AX	;f(a)+a popped
-		ADD AX, BX
-		PUSH AX	;pushed f(a)+a+b
-
-		POP AX	;f(a)+a+b popped
-		MOV [BP+-2], AX	;assigned f(a)+a+b to x
-		POP AX	;Popped out x=f(a)+a+b
-		PUSH [BP+-2]	; x pushed
-		POP AX	;saving returned value in AX
-		MOV SP, BP	;Restoring SP at the end of function
-		POP BP	;restoring BP at the end of function
-		RET 4
-	g ENDP
 	main PROC
 		MOV AX, @DATA
 		MOV DS, AX
-		PUSH BX    ;line no 15: a declared
-		PUSH BX    ;line no 15: b declared
-		PUSH [BP+-2]	; a pushed
+		PUSH BX    ;line no 2: a declared
+		PUSH BX    ;line no 2: b declared
+		PUSH BX    ;line no 2: c declared
+		PUSH BX    ;line no 2: i declared
+		PUSH [BP+-4]	; b pushed
+		PUSH 0
+		POP AX	;0 popped
+		MOV [BP+-4], AX	;assigned 0 to b
+		POP AX	;Popped out b=0
+		PUSH [BP+-6]	; c pushed
 		PUSH 1
 		POP AX	;1 popped
-		MOV [BP+-2], AX	;assigned 1 to a
-		POP AX	;Popped out a=1
-		PUSH [BP+-4]	; b pushed
-		PUSH 2
-		POP AX	;2 popped
-		MOV [BP+-4], AX	;assigned 2 to b
-		POP AX	;Popped out b=2
+		MOV [BP+-6], AX	;assigned 1 to c
+		POP AX	;Popped out c=1
+		PUSH [BP+-8]	; i pushed
+		PUSH 0
+		POP AX	;0 popped
+		MOV [BP+-8], AX	;assigned 0 to i
+		POP AX	;Popped out i=0
+		;line no 5: evaluating for loop
+		L_1:	;For loop start label
+
+		PUSH [BP+-8]	; i pushed
+		PUSH 4
+		;Checking if i<4
+		POP BX	;popped out 4
+		POP AX	;popped out i
+		CMP AX, BX	;comparing i and 4
+		JL L_2
+		PUSH 0	;false
+		JMP L_3
+		L_2:
+		PUSH 1	;true
+		L_3:
+
+		POP AX	;Popped out i<4
+		CMP AX, 0	;compare with 0 to see if the expression is false
+		JNE L_5
+		JMP L_4	;if false jump to end of for loop
+		L_5:
+
 		PUSH [BP+-2]	; a pushed
+		PUSH 3
+		POP AX	;3 popped
+		MOV [BP+-2], AX	;assigned 3 to a
+		POP AX	;Popped out a=3
+		L_6:	;while loop start label
+
 		PUSH [BP+-2]	; a pushed
+		;line no 7: postfix decrement of a
+		POP AX	;setting AX to the value of a
+		PUSH AX	;pushing the value of a back to stack
+		DEC AX	;decrementing a
+		MOV [BP+-2], AX	;saving the decremented value of a
+
+		POP AX	;popped a--
+		CMP AX, 0	;compare with 0 to see if the expression is false
+		JNE L_8
+		JMP L_7	;if false jump to end of while loop
+		L_8:
+
 		PUSH [BP+-4]	; b pushed
-		CALL g
-		PUSH AX	;pushed return value of g
-		POP AX	;g(a,b) popped
-		MOV [BP+-2], AX	;assigned g(a,b) to a
-		POP AX	;Popped out a=g(a,b)
+		;line no 8: postfix increment of b
+		POP AX	;setting AX to the value of b
+		PUSH AX	;pushing the value of b back to stack
+		INC AX	;incrementing b
+		MOV [BP+-4], AX	;saving the incremented value of b
+
+		POP AX	;Popped out b++
+		JMP L_6
+		L_7:	;while loop end label
+
+		PUSH [BP+-8]	; i pushed
+		;line no 5: postfix increment of i
+		POP AX	;setting AX to the value of i
+		PUSH AX	;pushing the value of i back to stack
+		INC AX	;incrementing i
+		MOV [BP+-8], AX	;saving the incremented value of i
+
+		POP AX	;popped i++
+		JMP L_1	;jump back to for loop
+		L_4:
+
 
 		PUSH [BP+-2]	;passing a to PRINT_INTEGER
 		CALL PRINT_INTEGER
 
-		PUSH 0
-		MOV AH, 4CH
-		INT 21H
+
+		PUSH [BP+-4]	;passing b to PRINT_INTEGER
+		CALL PRINT_INTEGER
+
+
+		PUSH [BP+-6]	;passing c to PRINT_INTEGER
+		CALL PRINT_INTEGER
+
 		MOV AH, 4CH
 		INT 21H
 	main ENDP

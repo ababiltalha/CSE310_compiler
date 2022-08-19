@@ -9,73 +9,6 @@
 
 .CODE
 
-f PROC
-	PUSH BP
-	MOV BP, SP
-PUSH AX ; w decl
-MOV AX, -2[BP]
-PUSH AX ; w called
-PUSH 2
-MOV AX, 4[BP]
-PUSH AX ; a called
-POP BX
-POP AX
-IMUL BX
-PUSH AX ; result of 2*a is in AX, pushed
-POP AX ; r-val of assignop 2*a
-MOV -2[BP], AX ; assigning 2*a to w
-POP AX
-MOV AX, -2[BP]
-PUSH AX ; w called
-POP AX
-	JMP f_EXIT
-MOV AX, 4[BP]
-PUSH AX ; a called
-PUSH 9
-POP AX ; r-val of assignop 9
-MOV 4[BP], AX ; assigning 9 to a
-POP AX
-f_EXIT:
-	MOV SP, BP ; Restoring SP
-	POP BP
-	RET 2
-f ENDP
-
-g PROC
-	PUSH BP
-	MOV BP, SP
-PUSH AX ; x decl
-MOV AX, -2[BP]
-PUSH AX ; x called
-MOV AX, 6[BP]
-PUSH AX ; a called
-CALL f
-PUSH AX ; return value of f
-MOV AX, 6[BP]
-PUSH AX ; a called
-POP AX
-POP BX
-ADD AX, BX
-PUSH AX ; f(a)+a pushed
-MOV AX, 4[BP]
-PUSH AX ; b called
-POP AX
-POP BX
-ADD AX, BX
-PUSH AX ; f(a)+a+b pushed
-POP AX ; r-val of assignop f(a)+a+b
-MOV -2[BP], AX ; assigning f(a)+a+b to x
-POP AX
-MOV AX, -2[BP]
-PUSH AX ; x called
-POP AX
-	JMP g_EXIT
-g_EXIT:
-	MOV SP, BP ; Restoring SP
-	POP BP
-	RET 4
-g ENDP
-
 main PROC
 	MOV AX, @DATA
 	MOV DS, AX
@@ -83,34 +16,39 @@ PUSH BP
 MOV BP, SP
 PUSH AX ; a decl
 PUSH AX ; b decl
-MOV AX, -2[BP]
-PUSH AX ; a called
-PUSH 1
-POP AX ; r-val of assignop 1
-MOV -2[BP], AX ; assigning 1 to a
-POP AX
+PUSH AX ; c decl
+PUSH AX ; i decl
 MOV AX, -4[BP]
 PUSH AX ; b called
-PUSH 2
-POP AX ; r-val of assignop 2
-MOV -4[BP], AX ; assigning 2 to b
-POP AX
-MOV AX, -2[BP]
-PUSH AX ; a called
-MOV AX, -2[BP]
-PUSH AX ; a called
-MOV AX, -4[BP]
-PUSH AX ; b called
-CALL g
-PUSH AX ; return value of g
-POP AX ; r-val of assignop g(a,b)
-MOV -2[BP], AX ; assigning g(a,b) to a
-POP AX
-MOV AX, -2[BP]
-CALL PRINT ; argument a in AX
 PUSH 0
+POP AX ; r-val of assignop 0
+MOV -4[BP], AX ; assigning 0 to b
 POP AX
-	JMP main_EXIT
+MOV AX, -6[BP]
+PUSH AX ; c called
+PUSH 3
+POP AX ; r-val of assignop 3
+MOV -6[BP], AX ; assigning 3 to c
+POP AX
+label_0: ; while loop begin
+MOV AX, -6[BP]
+PUSH AX ; c called
+DEC AX
+MOV -6[BP], AX
+POP CX
+CMP CX, 0
+JE label_1
+MOV AX, -4[BP]
+PUSH AX ; b called
+INC AX
+MOV -4[BP], AX
+POP AX
+JMP label_0 ; back to top of loop
+label_1:
+MOV AX, -4[BP]
+CALL PRINT ; argument b in AX
+MOV AX, -6[BP]
+CALL PRINT ; argument c in AX
 main_EXIT:
 	MOV SP, BP ; Restoring SP
 	POP BP

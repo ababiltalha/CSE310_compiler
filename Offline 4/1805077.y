@@ -21,6 +21,8 @@ string currentFunc="";
 
 string labelElse="aaaaaaaaa";
 string labelEndIf="bbbbbbbbbb";
+string labelLoopStart="ccccccc";
+string labelLoopEnd="dddd"; 
 
 void resetCurrentOffset(){
 	currentOffset=0;
@@ -683,7 +685,8 @@ statement : var_declaration
 	  {
 		$$ = new SymbolInfo("for("+$3->getName()+$4->getName()+$5->getName()+")"+$7->getName(), "statement");
 		fprintf(logout, "Line %d: statement : FOR LPAREN expression_statement expression_statement expression RPAREN statement\n\n%s\n\n", lineCount, $$->getName().c_str());
-		
+		//Offline 4 code
+
 	  }
 	  | if_expr statement %prec LOWER_THAN_ELSE
 	  {
@@ -701,12 +704,20 @@ statement : var_declaration
 		fprintf(logout, "Line %d: statement : IF LPAREN expression RPAREN statement ELSE statement\n\n%s\n\n", lineCount, $$->getName().c_str());
 		fprintf(asmout, "%s: ; end if label\n", labelEndIf.c_str());
 	  }
-
-	  | WHILE LPAREN expression RPAREN statement
+	  | WHILE 
 	  {
-		$$ = new SymbolInfo("while("+$3->getName()+")"+$5->getName(), "statement");
+		labelLoopStart= newLabel();
+		fprintf(asmout, "%s: ; while loop begin\n", labelLoopStart.c_str());
+	  } LPAREN expression RPAREN 
+	  {
+		labelLoopEnd= newLabel();
+		fprintf(asmout, "POP CX\nCMP CX, 0\nJE %s\n", labelLoopEnd.c_str());
+	  } statement
+	  {
+		$$ = new SymbolInfo("while("+$4->getName()+")"+$7->getName(), "statement");
 		fprintf(logout, "Line %d: statement : WHILE LPAREN expression RPAREN statement\n\n%s\n\n", lineCount, $$->getName().c_str());
-		
+		//Offline 4 code
+		fprintf(asmout, "JMP %s ; back to top of loop\n%s:\n", labelLoopStart.c_str(), labelLoopEnd.c_str());
 	  }
 	  | PRINTLN LPAREN ID RPAREN SEMICOLON
 	  { // move to AX from stack 
