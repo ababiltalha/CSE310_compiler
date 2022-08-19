@@ -181,8 +181,8 @@ void yyerror(char *s)
 start : {
 		fprintf(asmout, ".MODEL SMALL\n");
 		fprintf(asmout, "\n.STACK 400H\n");
-		fprintf(asmout, "\n.DATA\n\tFLAG DB 0\n\tNL DB 13,10,\"$\"\n\tNUMBER_STRING DB \"00000$\" \n");
-		fprintf(asmout, "\n.CODE\n");
+		fprintf(asmout, "\n.DATA\n\n");
+		fprintf(asmout, "\n.CODE\n\tFLAG DB 0\n\tNL DB 13,10,\"$\"\n\tNUMBER_STRING DB \"00000$\" \n");
 	} program {
 		fprintf(logout, "Line %d: start : program\n\n", lineCount);
 		printUtilFunctions();
@@ -759,7 +759,9 @@ statement : var_declaration
 		}
 		else $$ = new SymbolInfo("println("+$3->getName()+");", "statement");
 		fprintf(logout, "Line %d: statement : PRINTLN LPAREN ID RPAREN SEMICOLON\n\n%s\n\n", lineCount, $$->getName().c_str());
-		fprintf(asmout, "MOV AX, %d[BP]\nCALL PRINT ; argument %s in AX\n", temp->getStackOffset(), temp->getName().c_str());
+		
+		if(temp->isGlobal()) fprintf(asmout, "MOV AX, %s\nCALL PRINT ; argument %s in AX\n", temp->getName().c_str(), temp->getName().c_str());
+		else fprintf(asmout, "MOV AX, %d[BP]\nCALL PRINT ; argument %s in AX\n", temp->getStackOffset(), temp->getName().c_str());
 	  }
 	  | RETURN expression SEMICOLON
 	  { // jump to label of current function
@@ -930,15 +932,19 @@ expression : logic_expression
 			string varName= $1->getName();
 
 			fprintf(asmout, "POP AX ; r-val of assignop %s\n", $3->getName().c_str());
-			if (varName.find("[") != string::npos){
-				fprintf(asmout, "POP BX\n");
-				fprintf(asmout, ";MOV [BX], AX\nPUSH BP\nADD BP, BX\nMOV [BP], AX\nPOP BP ; assigning %s to %s\n", $3->getName().c_str(), $1->getName().c_str());
+			SymbolInfo* temp = table.lookUpSymbol(varName);
+			if(temp->isGlobal()){
+				fprintf(asmout, "MOV %s, AX\n", temp->getName().c_str());
+			} else {
+				if (varName.find("[") != string::npos){
+					fprintf(asmout, "POP BX\n");
+					fprintf(asmout, ";MOV [BX], AX\nPUSH BP\nADD BP, BX\nMOV [BP], AX\nPOP BP ; assigning %s to %s\n", $3->getName().c_str(), $1->getName().c_str());
+				}
+				else {
+					fprintf(asmout, "MOV %d[BP], AX ; assigning %s to %s\n", $1->getStackOffset(), $3->getName().c_str(), $1->getName().c_str());
+				}
+				// fprintf(asmout, "POP AX\n");
 			}
-			else {
-				fprintf(asmout, "MOV %d[BP], AX ; assigning %s to %s\n", $1->getStackOffset(), $3->getName().c_str(), $1->getName().c_str());
-			}
-			// fprintf(asmout, "POP AX\n");
-			
 			$$ = new SymbolInfo($1->getName()+"="+$3->getName(), "expression");
 			fprintf(logout, "Line %d: expression : variable ASSIGNOP logic_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
 			
@@ -1278,15 +1284,15 @@ int main(int argc,char *argv[])
 		exit(1);
 	}
 
-	logout= fopen(argv[2],"w");
+	logout= fopen("log.txt","w");
 	fclose(logout);
-	errorout= fopen(argv[3],"w");
+	errorout= fopen("error.txt","w");
 	fclose(errorout);
 	asmout= fopen("code.asm","w");
 	fclose(asmout);
 	
-	logout= fopen(argv[2],"a");
-	errorout= fopen(argv[3],"a");
+	logout= fopen("log.txt","a");
+	errorout= fopen("error.txt","a");
 	asmout= fopen("code.asm","a");
 	
 

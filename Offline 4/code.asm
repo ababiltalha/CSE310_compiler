@@ -3,11 +3,12 @@
 .STACK 400H
 
 .DATA
+
+
+.CODE
 	FLAG DB 0
 	NL DB 13,10,"$"
 	NUMBER_STRING DB "00000$" 
-
-.CODE
 
 main PROC
 	MOV AX, @DATA
