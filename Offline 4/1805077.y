@@ -333,6 +333,7 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN
 
 			resetCurrentOffset();
 			fprintf(asmout, "%s_EXIT:\n", $2->getName().c_str());
+			fprintf(asmout, "\tMOV SP, BP ; Restoring SP\n");
 			fprintf(asmout, "\tPOP BP\n");
 			fprintf(asmout, "\tRET %d\n", 2*parameterCount);
 			fprintf(asmout, "%s ENDP\n", $2->getName().c_str());
@@ -400,6 +401,7 @@ func_definition : type_specifier ID LPAREN parameter_list RPAREN
 			fprintf(logout, "Line %d: func_definition : type_specifier ID LPAREN RPAREN compound_statement\n\n%s\n\n\n", lineCount, $$->getName().c_str());
 			resetCurrentOffset();
 			fprintf(asmout, "%s_EXIT:\n", $2->getName().c_str());
+			fprintf(asmout, "\tMOV SP, BP ; Restoring SP\n");
 			fprintf(asmout, "\tPOP BP\n");
 			if($2->getName()=="main") {
 				fprintf(asmout, "\tMOV AH, 4CH\n\tINT 21H\n");
@@ -468,7 +470,7 @@ enter_scope :
 					parameterCount= parameterTypeList.size();
 					for(int i=0; i<parameterTypeList.size(); i++){
 						SymbolInfo* tempSymbol= new SymbolInfo(parameterNameList[i], parameterTypeList[i]);
-						tempSymbol->setStackOffset(i*2+4); // 2 for BP, 2 for ret address
+						tempSymbol->setStackOffset((parameterTypeList.size()-i-1)*2+4); // 2 for BP, 2 for ret address
 						tempSymbol->setGlobal(false);
 						// fprintf(asmout, "PUSH AX\n");
 						table.insertSymbolInfo(tempSymbol);
@@ -807,7 +809,7 @@ variable : ID
 					fprintf(logout, "Error at line %d: Expression inside third brackets not an integer\n\n", lineCount);
 				}
 				if(temp->isGlobal()) {
-					// fprintf(asmout, "LEA SI, %s\nMOV AX, %s[SI]\n ; %s called\n", temp->getName().c_str(), temp->getName().c_str()); //! handle global array index calc
+					fprintf(asmout, "POP BX ; popped index expr\nSHL BX, 1\nMOV SI, %s\nMOV AX, BX[SI]\n ; %s called\n", temp->getName().c_str(), temp->getName().c_str()); //! handle global array index calc
 				} else {
 					fprintf(asmout, "POP BX ; popped index expr %s\nSHL BX, 1\nADD BX, %d\n;ADD BX, BP\nPUSH BP\nADD BP, BX\nMOV AX, [BP]\nPOP BP\n;MOV AX, [BX]\nPUSH AX ; value of %s[%s]\nPUSH BX ; index %s\n",
 						$3->getName().c_str(), temp->getStackOffset(), temp->getName().c_str(), $3->getName().c_str(), $3->getName().c_str());
@@ -999,7 +1001,8 @@ simple_expression : term
 			}
 			if($2->getName()=="+")
 				fprintf(asmout, "POP AX\nPOP BX\nADD AX, BX\nPUSH AX ; %s+%s pushed\n", $1->getName().c_str(), $3->getName().c_str());
-			else ; //! minus
+			else 
+				fprintf(asmout, "POP AX\nPOP BX\nSUB BX, AX\nPUSH BX ; %s-%s pushed\n", $1->getName().c_str(), $3->getName().c_str()); //! check minus
 			$$ = new SymbolInfo("", exprType);
 			$$->setName($1->getName()+$2->getName()+$3->getName());
 			fprintf(logout, "Line %d: simple_expression : simple_expression ADDOP term\n\n%s\n\n", lineCount, $$->getName().c_str());
@@ -1043,7 +1046,8 @@ term :	unary_expression
 			// Offline 4 code
 			if($2->getName()=="*")
 				fprintf(asmout, "POP BX\nPOP AX\nIMUL BX\nPUSH AX ; result of %s is in AX, pushed\n", $$->getName().c_str());
-			else ; //! division
+			else 
+				fprintf(asmout, "POP BX\nPOP AX\nIDIV BX\nPUSH AX ; result of %s is in AX, pushed\n", $$->getName().c_str());; //! division
 		}
 		fprintf(logout, "Line %d: term : term MULOP unary_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
 		
@@ -1057,6 +1061,13 @@ unary_expression : ADDOP unary_expression
 				fprintf(errorout, "Error at line %d: Void function used in expression\n\n", lineCount);
 				fprintf(logout, "Error at line %d: Void function used in expression\n\n", lineCount);
 			}
+
+			//Offline 4
+			if($1->getName()=="-"){
+				//! pls do
+				fprintf(asmout, "POP AX\nNEG AX ; -%s\nPUSH AX\n", $2->getName());
+			}
+
 			$$ = new SymbolInfo($1->getName()+$2->getName(), $2->getType());
 			fprintf(logout, "Line %d: unary_expression : ADDOP unary_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
 		 }
@@ -1069,6 +1080,11 @@ unary_expression : ADDOP unary_expression
 			}
 			$$ = new SymbolInfo("!"+$2->getName(), $2->getType());
 			fprintf(logout, "Line %d: unary_expression : NOT unary_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
+		 	string labelIfTrue=newLabel();
+			string labelIfFalse=newLabel();
+			fprintf(asmout, "POP AX\nCMP AX, 0 ; !%s\nJNE %s\nMOV AX, 1\nJMP %s\n\
+				\n%s:\nXOR AX, AX\n%s:\nPUSH AX\n"
+				, $2->getName().c_str(), labelIfTrue.c_str(), labelIfFalse.c_str(), labelIfTrue.c_str(), labelIfFalse.c_str());
 		 }
 		 | factor 
 		 {
@@ -1133,7 +1149,10 @@ factor	: variable
 		}
 		$$ = new SymbolInfo($1->getName()+"("+$3->getName()+")", returnType);
 		fprintf(logout, "Line %d: factor : ID LPAREN argument_list RPAREN\n\n%s\n\n", lineCount, $$->getName().c_str());
-		
+		fprintf(asmout, "CALL %s\n", $1->getName().c_str());
+		if(returnType!="void"){
+			fprintf(asmout, "PUSH AX ; return value of %s\n", $1->getName().c_str());
+		}
 	}
 	| LPAREN expression RPAREN
 	{
@@ -1195,11 +1214,15 @@ arguments : arguments COMMA logic_expression
 			{
 				$$ = new SymbolInfo($1->getName()+","+$3->getName(),$1->getType()+","+$3->getType());
 				fprintf(logout, "Line %d: arguments : arguments COMMA logic_expression\n\n%s\n\n", lineCount, $$->getName().c_str());
+				// fprintf(asmout, "PUSH AX ; pushing %s as argument\n", $3->getName().c_str());
+
 			}
 	      | logic_expression
 			{
 				$$=$1;
 				fprintf(logout, "Line %d: arguments : logic_expression\n\n%s\n\n", lineCount, $1->getName().c_str());
+				// fprintf(asmout, "PUSH AX ; pushing %s as argument\n", $$->getName().c_str());
+			
 			}
 	      ; 
 

@@ -51,153 +51,98 @@
         POP BP          ; Restore BP
         RET 2
     PRINT_INTEGER ENDP
+	f PROC
+		;entering function: f
+		PUSH BP	;saving BP
+		MOV BP, SP	;BP = SP (all the offsets in this function are based on this value of BP)
+
+		PUSH BX    ;line no 2: w declared
+		PUSH [BP+-2]	; w pushed
+		PUSH 2
+		PUSH [BP+4]	; a pushed
+		;Multiplication of 2 and a
+		POP BX	;a popped
+		POP AX	;2 popped
+		IMUL BX	;AX = 2 * a
+		PUSH AX	;pushed 2*a
+
+		POP AX	;2*a popped
+		MOV [BP+-2], AX	;assigned 2*a to w
+		POP AX	;Popped out w=2*a
+		PUSH [BP+-2]	; w pushed
+		POP AX	;saving returned value in AX
+		MOV SP, BP	;Restoring SP at the end of function
+		POP BP	;restoring BP at the end of function
+		RET 2
+		PUSH [BP+4]	; a pushed
+		PUSH 9
+		POP AX	;9 popped
+		MOV [BP+4], AX	;assigned 9 to a
+		POP AX	;Popped out a=9
+	f ENDP
+	g PROC
+		;entering function: g
+		PUSH BP	;saving BP
+		MOV BP, SP	;BP = SP (all the offsets in this function are based on this value of BP)
+
+		PUSH BX    ;line no 9: x declared
+		PUSH [BP+-2]	; x pushed
+		PUSH [BP+6]	; a pushed
+		CALL f
+		PUSH AX	;pushed return value of f
+		PUSH [BP+6]	; a pushed
+		;line no 10: ADD f(a) and a
+		POP BX	;a popped
+		POP AX	;f(a) popped
+		ADD AX, BX
+		PUSH AX	;pushed f(a)+a
+
+		PUSH [BP+4]	; b pushed
+		;line no 10: ADD f(a)+a and b
+		POP BX	;b popped
+		POP AX	;f(a)+a popped
+		ADD AX, BX
+		PUSH AX	;pushed f(a)+a+b
+
+		POP AX	;f(a)+a+b popped
+		MOV [BP+-2], AX	;assigned f(a)+a+b to x
+		POP AX	;Popped out x=f(a)+a+b
+		PUSH [BP+-2]	; x pushed
+		POP AX	;saving returned value in AX
+		MOV SP, BP	;Restoring SP at the end of function
+		POP BP	;restoring BP at the end of function
+		RET 4
+	g ENDP
 	main PROC
 		MOV AX, @DATA
 		MOV DS, AX
-		PUSH BX    ;line no 2: a declared
-		PUSH BX    ;line no 2: b declared
-		MOV SP, [BP+-10]	;array c[3] declared
+		PUSH BX    ;line no 15: a declared
+		PUSH BX    ;line no 15: b declared
 		PUSH [BP+-2]	; a pushed
 		PUSH 1
-		PUSH 2
-		PUSH 3
-		;line no 3: ADD 2 and 3
-		POP BX	;3 popped
-		POP AX	;2 popped
-		ADD AX, BX
-		PUSH AX	;pushed 2+3
-
-		;Multiplication of 1 and (2+3)
-		POP BX	;(2+3) popped
 		POP AX	;1 popped
-		IMUL BX	;AX = 1 * (2+3)
-		PUSH AX	;pushed 1*(2+3)
-
-		PUSH 3
-		;Modulus of 1*(2+3) and 3
-		POP BX	;3 popped
-		POP AX	;1*(2+3) popped
-		XOR DX, DX	;resetting DX to 0
-		IDIV BX	;1*(2+3)/3
-		MOV AX, DX	;AX = 1*(2+3)%3
-		PUSH AX	;pushed 1*(2+3)%3
-
-		POP AX	;1*(2+3)%3 popped
-		MOV [BP+-2], AX	;assigned 1*(2+3)%3 to a
-		POP AX	;Popped out a=1*(2+3)%3
+		MOV [BP+-2], AX	;assigned 1 to a
+		POP AX	;Popped out a=1
 		PUSH [BP+-4]	; b pushed
-		PUSH 1
-		PUSH 5
-		;Checking if 1<5
-		POP BX	;popped out 5
-		POP AX	;popped out 1
-		CMP AX, BX	;comparing 1 and 5
-		JL L_1
-		PUSH 0	;false
-		JMP L_2
-		L_1:
-		PUSH 1	;true
-		L_2:
-
-		POP AX	;1<5 popped
-		MOV [BP+-4], AX	;assigned 1<5 to b
-		POP AX	;Popped out b=1<5
-		PUSH 0
-		;line no 5: getting the value of c[0]
-		POP BX	;saving the index of the array in BX
-		SHL BX, 1	;multiplying index by 2 to match the size of word
-		NEG BX	;offset is negative
-		ADD BX, -6	;adding the offset of the array to get the offset of array element
-		ADD BX, BP	;adding BP to BX to get the address of the array
-		MOV AX, [BX]	;getting the value of the array at index BX
-		PUSH AX	;pushing the value of the array element at index 0
-		PUSH BX	;pushing the index of the array
 		PUSH 2
 		POP AX	;2 popped
-		POP BX	;index of the array element popped
-		MOV [BX], AX	;assigning the value of 2 to c[BX]
-
-		POP AX	;Popped out c=2
+		MOV [BP+-4], AX	;assigned 2 to b
+		POP AX	;Popped out b=2
+		PUSH [BP+-2]	; a pushed
 		PUSH [BP+-2]	; a pushed
 		PUSH [BP+-4]	; b pushed
-		;line no 6: a&&b
-		POP BX	; b popped
-		POP AX	; a popped
-		CMP AX, 0	; comparing a and 0
-		JNE L_3	; if a is not 0, check b. So, jump to L_3
-		PUSH 0	; a is 0, the whole expression is 0. So, set the value to 0
-		JMP L_5
-		L_3:
-		CMP BX, 0	; comparing b and 0
-		JNE L_4	; if b is not 0, the whole expression is true. So, jump to L_4
-		PUSH 0	; a and b are false. So, set the value to 0
-		JMP L_5
-		L_4:
-		PUSH 1	; a and b are true. So, set the value to 1
-		L_5:
-
-		;line no 6: evaluating if block
-		POP AX	;popped expression value
-		CMP AX, 0	;compare with 0 to see if the expression is false
-		JNE L_7
-		JMP L_6	;if false jump to end of if block
-		L_7:
-
-		PUSH 0
-		;line no 7: getting the value of c[0]
-		POP BX	;saving the index of the array in BX
-		SHL BX, 1	;multiplying index by 2 to match the size of word
-		NEG BX	;offset is negative
-		ADD BX, -6	;adding the offset of the array to get the offset of array element
-		ADD BX, BP	;adding BP to BX to get the address of the array
-		MOV AX, [BX]	;getting the value of the array at index BX
-		PUSH AX	;pushing the value of the array element at index 0
-		PUSH BX	;pushing the index of the array
-		;line no 7: postfix increment of c
-		POP BX	;popped array index address
-		MOV AX, [BX]	;setting AX to the value of c
-		INC AX	;incrementing c
-		MOV [BX], AX	;saving the incremented value of c
-
-		POP AX	;Popped out c++
-		JMP L_8
-		L_6:
-		PUSH 1
-		;line no 9: getting the value of c[1]
-		POP BX	;saving the index of the array in BX
-		SHL BX, 1	;multiplying index by 2 to match the size of word
-		NEG BX	;offset is negative
-		ADD BX, -6	;adding the offset of the array to get the offset of array element
-		ADD BX, BP	;adding BP to BX to get the address of the array
-		MOV AX, [BX]	;getting the value of the array at index BX
-		PUSH AX	;pushing the value of the array element at index 1
-		PUSH BX	;pushing the index of the array
-		PUSH 0
-		;line no 9: getting the value of c[0]
-		POP BX	;saving the index of the array in BX
-		SHL BX, 1	;multiplying index by 2 to match the size of word
-		NEG BX	;offset is negative
-		ADD BX, -6	;adding the offset of the array to get the offset of array element
-		ADD BX, BP	;adding BP to BX to get the address of the array
-		MOV AX, [BX]	;getting the value of the array at index BX
-		PUSH AX	;pushing the value of the array element at index 0
-		PUSH BX	;pushing the index of the array
-		POP BX	;array index popped because it is no longer required
-		POP AX	;c popped
-		POP BX	;index of the array element popped
-		MOV [BX], AX	;assigning the value of c to c[BX]
-
-		POP AX	;Popped out c=c
-		L_8:
-
+		CALL g
+		PUSH AX	;pushed return value of g
+		POP AX	;g(a,b) popped
+		MOV [BP+-2], AX	;assigned g(a,b) to a
+		POP AX	;Popped out a=g(a,b)
 
 		PUSH [BP+-2]	;passing a to PRINT_INTEGER
 		CALL PRINT_INTEGER
 
-
-		PUSH [BP+-4]	;passing b to PRINT_INTEGER
-		CALL PRINT_INTEGER
-
+		PUSH 0
+		MOV AH, 4CH
+		INT 21H
 		MOV AH, 4CH
 		INT 21H
 	main ENDP
