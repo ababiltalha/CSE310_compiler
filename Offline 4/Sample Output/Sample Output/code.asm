@@ -102,15 +102,15 @@
 		POP AX	;1<5 popped
 		MOV [BP+-4], AX	;assigned 1<5 to b
 		POP AX	;Popped out b=1<5
-		PUSH 1
-		;line no 5: getting the value of c[1]
+		PUSH 0
+		;line no 5: getting the value of c[0]
 		POP BX	;saving the index of the array in BX
 		SHL BX, 1	;multiplying index by 2 to match the size of word
 		NEG BX	;offset is negative
 		ADD BX, -6	;adding the offset of the array to get the offset of array element
 		ADD BX, BP	;adding BP to BX to get the address of the array
 		MOV AX, [BX]	;getting the value of the array at index BX
-		PUSH AX	;pushing the value of the array element at index 1
+		PUSH AX	;pushing the value of the array element at index 0
 		PUSH BX	;pushing the index of the array
 		PUSH 2
 		POP AX	;2 popped
@@ -143,15 +143,15 @@
 		JMP L_6	;if false jump to end of if block
 		L_7:
 
-		PUSH 1
-		;line no 7: getting the value of c[1]
+		PUSH 0
+		;line no 7: getting the value of c[0]
 		POP BX	;saving the index of the array in BX
 		SHL BX, 1	;multiplying index by 2 to match the size of word
 		NEG BX	;offset is negative
 		ADD BX, -6	;adding the offset of the array to get the offset of array element
 		ADD BX, BP	;adding BP to BX to get the address of the array
 		MOV AX, [BX]	;getting the value of the array at index BX
-		PUSH AX	;pushing the value of the array element at index 1
+		PUSH AX	;pushing the value of the array element at index 0
 		PUSH BX	;pushing the index of the array
 		;line no 7: postfix increment of c
 		POP BX	;popped array index address
@@ -162,16 +162,6 @@
 		POP AX	;Popped out c++
 		JMP L_8
 		L_6:
-		PUSH 0
-		;line no 9: getting the value of c[0]
-		POP BX	;saving the index of the array in BX
-		SHL BX, 1	;multiplying index by 2 to match the size of word
-		NEG BX	;offset is negative
-		ADD BX, -6	;adding the offset of the array to get the offset of array element
-		ADD BX, BP	;adding BP to BX to get the address of the array
-		MOV AX, [BX]	;getting the value of the array at index BX
-		PUSH AX	;pushing the value of the array element at index 0
-		PUSH BX	;pushing the index of the array
 		PUSH 1
 		;line no 9: getting the value of c[1]
 		POP BX	;saving the index of the array in BX
@@ -181,6 +171,16 @@
 		ADD BX, BP	;adding BP to BX to get the address of the array
 		MOV AX, [BX]	;getting the value of the array at index BX
 		PUSH AX	;pushing the value of the array element at index 1
+		PUSH BX	;pushing the index of the array
+		PUSH 0
+		;line no 9: getting the value of c[0]
+		POP BX	;saving the index of the array in BX
+		SHL BX, 1	;multiplying index by 2 to match the size of word
+		NEG BX	;offset is negative
+		ADD BX, -6	;adding the offset of the array to get the offset of array element
+		ADD BX, BP	;adding BP to BX to get the address of the array
+		MOV AX, [BX]	;getting the value of the array at index BX
+		PUSH AX	;pushing the value of the array element at index 0
 		PUSH BX	;pushing the index of the array
 		POP BX	;array index popped because it is no longer required
 		POP AX	;c popped

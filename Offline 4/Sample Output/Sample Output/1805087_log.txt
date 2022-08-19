@@ -207,35 +207,35 @@ b=1<5;
 
 Line 5: factor : CONST_INT
 
-1
+0
 
 Line 5: unary_expression : factor
 
-1
+0
 
 Line 5: term : unary_expression
 
-1
+0
 
 Line 5: simple_expression : term
 
-1
+0
 
 Line 5: rel_expression : simple_expression
 
-1
+0
 
 Line 5: logic_expression : rel_expression
 
-1
+0
 
 Line 5: expression : logic_expression
 
-1
+0
 
 Line 5: variable : ID LTHIRD expression RTHIRD
 
-c[1]
+c[0]
 
 Line 5: factor : CONST_INT
 
@@ -338,35 +338,35 @@ a&&b
 
 Line 7: factor : CONST_INT
 
-1
+0
 
 Line 7: unary_expression : factor
 
-1
+0
 
 Line 7: term : unary_expression
 
-1
+0
 
 Line 7: simple_expression : term
 
-1
+0
 
 Line 7: rel_expression : simple_expression
 
-1
+0
 
 Line 7: logic_expression : rel_expression
 
-1
+0
 
 Line 7: expression : logic_expression
 
-1
+0
 
 Line 7: variable : ID LTHIRD expression RTHIRD
 
-c[1]
+c[0]
 
 Line 7: factor : variable INCOP
 
@@ -406,38 +406,6 @@ c++;
 
 Line 9: factor : CONST_INT
 
-0
-
-Line 9: unary_expression : factor
-
-0
-
-Line 9: term : unary_expression
-
-0
-
-Line 9: simple_expression : term
-
-0
-
-Line 9: rel_expression : simple_expression
-
-0
-
-Line 9: logic_expression : rel_expression
-
-0
-
-Line 9: expression : logic_expression
-
-0
-
-Line 9: variable : ID LTHIRD expression RTHIRD
-
-c[0]
-
-Line 9: factor : CONST_INT
-
 1
 
 Line 9: unary_expression : factor
@@ -467,6 +435,38 @@ Line 9: expression : logic_expression
 Line 9: variable : ID LTHIRD expression RTHIRD
 
 c[1]
+
+Line 9: factor : CONST_INT
+
+0
+
+Line 9: unary_expression : factor
+
+0
+
+Line 9: term : unary_expression
+
+0
+
+Line 9: simple_expression : term
+
+0
+
+Line 9: rel_expression : simple_expression
+
+0
+
+Line 9: logic_expression : rel_expression
+
+0
+
+Line 9: expression : logic_expression
+
+0
+
+Line 9: variable : ID LTHIRD expression RTHIRD
+
+c[0]
 
 Line 9: factor : variable
 

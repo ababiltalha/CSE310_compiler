@@ -884,6 +884,7 @@ expression : logic_expression
 				}
 			}
 			string varName= $1->getName();
+
 			fprintf(asmout, "POP AX ; r-val of assignop %s\n", $3->getName().c_str());
 			if (varName.find("[") != string::npos){
 				fprintf(asmout, "POP BX\n");
@@ -1080,6 +1081,8 @@ factor	: variable
 	{
 		$$=$1;
 		fprintf(logout, "Line %d: factor : variable\n\n%s\n\n", lineCount, $$->getName().c_str());
+		if ($$->getName().find("[") != string::npos)
+			fprintf(asmout, "POP BX ; r-value, no need for index\n");
 	}
 	| ID LPAREN argument_list RPAREN
 	{
@@ -1153,11 +1156,26 @@ factor	: variable
 	{
 		$$ = new SymbolInfo($1->getName()+"++",$1->getType());
 		fprintf(logout, "Line %d: factor : variable INCOP\n\n%s\n\n", lineCount, $$->getName().c_str());
+		if ($1->getName().find("[") != string::npos){
+			fprintf(asmout, "POP BX\nPOP AX\nINC AX ; %s++\n", $1->getName().c_str());
+			fprintf(asmout, "PUSH BP\nADD BP, BX\nMOV [BP], AX\nPOP BP\n");
+		}
+		else {
+			fprintf(asmout, "INC AX\nMOV %d[BP], AX\n", $1->getStackOffset());
+		}
+		// fprintf(asmout, "INC AX\n");
 	}
 	| variable DECOP
 	{
 		$$ = new SymbolInfo($1->getName()+"--",$1->getType());
 		fprintf(logout, "Line %d: factor : variable DECOP\n\n%s\n\n", lineCount, $$->getName().c_str());
+		if ($1->getName().find("[") != string::npos){
+			fprintf(asmout, "POP BX\nPOP AX\nDEC AX ; %s++\n", $1->getName().c_str());
+			fprintf(asmout, "PUSH BP\nADD BP, BX\nMOV [BP], AX\nPOP BP\n");
+		}
+		else {
+			fprintf(asmout, "DEC AX\nMOV %d[BP], AX\n", $1->getStackOffset());
+		}
 	}
 	;
 	
