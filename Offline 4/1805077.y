@@ -690,12 +690,27 @@ statement : var_declaration
 		$$=$1;
 		fprintf(logout, "Line %d: statement : compound_statement\n\n%s\n\n", lineCount, $$->getName().c_str());
 	  }
-	  | FOR LPAREN expression_statement expression_statement expression RPAREN statement
+	  | FOR LPAREN expression_statement {
+		forCount++;
+		forCountStack.push(forCount);
+		fprintf(asmout, "%s: ; for loop starting label\n", ("label_for_start_"+to_string(forCountStack.top())).c_str());
+	  } expression_statement {
+	  	fprintf(asmout, "CMP AX, 0\n");
+	  	fprintf(asmout, "JE %s ; loop ending condn\n", ("label_for_end_"+to_string(forCountStack.top())).c_str());
+	  	fprintf(asmout, "JMP %s ; loop code label\n", ("label_for_stmt_"+to_string(forCountStack.top())).c_str());
+	  	fprintf(asmout, "%s: ; loop iterator inc/dec\n", ("label_for_ite_"+to_string(forCountStack.top())).c_str());
+	  	
+	  } expression RPAREN {
+		fprintf(asmout, "JMP %s ; restart loop\n", ("label_for_start_"+to_string(forCountStack.top())).c_str());
+		fprintf(asmout, "%s: ; loop code\n", ("label_for_stmt_"+to_string(forCountStack.top())).c_str());
+	  } statement
 	  {
-		$$ = new SymbolInfo("for("+$3->getName()+$4->getName()+$5->getName()+")"+$7->getName(), "statement");
+		$$ = new SymbolInfo("for("+$3->getName()+$5->getName()+$7->getName()+")"+$10->getName(), "statement");
 		fprintf(logout, "Line %d: statement : FOR LPAREN expression_statement expression_statement expression RPAREN statement\n\n%s\n\n", lineCount, $$->getName().c_str());
 		//Offline 4 code
-
+		fprintf(asmout, "JMP %s ; update iterator after stmt\n", ("label_for_ite_"+to_string(forCountStack.top())).c_str());
+	  	fprintf(asmout, "%s: ; end of for loop\n", ("label_for_end_"+to_string(forCountStack.top())).c_str());
+	  	forCountStack.pop();
 	  }
 	  | if_expr statement %prec LOWER_THAN_ELSE
 	  {

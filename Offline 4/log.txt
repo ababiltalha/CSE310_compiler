@@ -8,100 +8,196 @@ int
 
 Line 2: declaration_list : ID
 
-a
+i
 
 Line 2: declaration_list : declaration_list COMMA ID
 
-a,b
+i,j
 
-Line 2: declaration_list : declaration_list COMMA ID LTHIRD CONST_INT RTHIRD
+Line 2: declaration_list : declaration_list COMMA ID
 
-a,b,c[3]
+i,j,a
 
 Line 2: var_declaration : type_specifier declaration_list SEMICOLON
 
-int a,b,c[3];
+int i,j,a;
 
 Line 2: statement : var_declaration
 
-int a,b,c[3];
+int i,j,a;
 
 Line 2: statements : statement
 
-int a,b,c[3];
+int i,j,a;
 
 Line 3: variable : ID
 
-b
+a
 
 Line 3: factor : CONST_INT
 
-3
+0
 
 Line 3: unary_expression : factor
 
-3
+0
 
 Line 3: term : unary_expression
 
-3
+0
 
 Line 3: simple_expression : term
 
-3
+0
 
 Line 3: rel_expression : simple_expression
 
-3
+0
 
 Line 3: logic_expression : rel_expression
 
-3
+0
 
 Line 3: expression : variable ASSIGNOP logic_expression
 
-b=3
+a=0
 
 Line 3: expression_statement : expression SEMICOLON
 
-b=3;
+a=0;
 
 Line 3: statement : expression_statement
 
-b=3;
+a=0;
 
 Line 3: statements : statements statement
 
-int a,b,c[3];
-b=3;
+int i,j,a;
+a=0;
+
+Line 4: variable : ID
+
+i
 
 Line 4: factor : CONST_INT
 
-1
+0
 
 Line 4: unary_expression : factor
 
-1
+0
 
 Line 4: term : unary_expression
 
-1
+0
 
 Line 4: simple_expression : term
 
-1
+0
 
 Line 4: rel_expression : simple_expression
 
-1
+0
 
 Line 4: logic_expression : rel_expression
 
-1
+0
+
+Line 4: expression : variable ASSIGNOP logic_expression
+
+i=0
+
+Line 4: expression_statement : expression SEMICOLON
+
+i=0;
+
+Line 4: variable : ID
+
+i
+
+Line 4: factor : variable
+
+i
+
+Line 4: unary_expression : factor
+
+i
+
+Line 4: term : unary_expression
+
+i
+
+Line 4: simple_expression : term
+
+i
+
+Line 4: factor : CONST_INT
+
+5
+
+Line 4: unary_expression : factor
+
+5
+
+Line 4: term : unary_expression
+
+5
+
+Line 4: simple_expression : term
+
+5
+
+Line 4: rel_expression : simple_expression RELOP simple_expression
+
+i<5
+
+Line 4: logic_expression : rel_expression
+
+i<5
 
 Line 4: expression : logic_expression
 
-1
+i<5
+
+Line 4: expression_statement : expression SEMICOLON
+
+i<5;
+
+Line 4: variable : ID
+
+i
+
+Line 4: factor : variable INCOP
+
+i++
+
+Line 4: unary_expression : factor
+
+i++
+
+Line 4: term : unary_expression
+
+i++
+
+Line 4: simple_expression : term
+
+i++
+
+Line 4: rel_expression : simple_expression
+
+i++
+
+Line 4: logic_expression : rel_expression
+
+i++
+
+Line 4: expression : logic_expression
+
+i++
+
+Line 5: variable : ID
+
+j
 
 Line 5: factor : CONST_INT
 
@@ -127,71 +223,129 @@ Line 5: logic_expression : rel_expression
 
 0
 
+Line 5: expression : variable ASSIGNOP logic_expression
+
+j=0
+
+Line 5: expression_statement : expression SEMICOLON
+
+j=0;
+
+Line 5: variable : ID
+
+j
+
+Line 5: factor : variable
+
+j
+
+Line 5: unary_expression : factor
+
+j
+
+Line 5: term : unary_expression
+
+j
+
+Line 5: simple_expression : term
+
+j
+
+Line 5: variable : ID
+
+i
+
+Line 5: factor : variable
+
+i
+
+Line 5: unary_expression : factor
+
+i
+
+Line 5: term : unary_expression
+
+i
+
+Line 5: simple_expression : term
+
+i
+
+Line 5: rel_expression : simple_expression RELOP simple_expression
+
+j<=i
+
+Line 5: logic_expression : rel_expression
+
+j<=i
+
 Line 5: expression : logic_expression
 
-0
+j<=i
 
-Line 6: variable : ID
+Line 5: expression_statement : expression SEMICOLON
 
-a
+j<=i;
 
-Line 6: factor : CONST_INT
+Line 5: variable : ID
 
-10
+j
 
-Line 6: unary_expression : factor
+Line 5: factor : variable INCOP
 
-10
+j++
 
-Line 6: term : unary_expression
+Line 5: unary_expression : factor
 
-10
+j++
 
-Line 6: simple_expression : term
+Line 5: term : unary_expression
 
-10
+j++
 
-Line 6: rel_expression : simple_expression
+Line 5: simple_expression : term
 
-10
+j++
 
-Line 6: logic_expression : rel_expression
+Line 5: rel_expression : simple_expression
 
-10
+j++
 
-Line 6: expression : variable ASSIGNOP logic_expression
+Line 5: logic_expression : rel_expression
 
-a=10
+j++
 
-Line 6: expression_statement : expression SEMICOLON
+Line 5: expression : logic_expression
 
-a=10;
+j++
 
-Line 6: statement : expression_statement
+Line 6: statement : PRINTLN LPAREN ID RPAREN SEMICOLON
 
-a=10;
+println(a);
+
+Line 6: statement : FOR LPAREN expression_statement expression_statement expression RPAREN statement
+
+for(j=0;j<=i;j++)println(a);
 
 Line 6: statements : statement
 
-a=10;
+for(j=0;j<=i;j++)println(a);
 
 Line 7: compound_statement : LCURL statements RCURL
 
 {
-a=10;
+for(j=0;j<=i;j++)println(a);
 }
 
 
 
 
-ScopeTable # 1.1.1.1
-
 ScopeTable # 1.1.1
 
 ScopeTable # 1.1
- 7 --> < a , ID >::stackOffset=-2
- 8 --> < b , ID >::stackOffset=-4
- 9 --> < c , ID >::stackOffset=-10
+ 7 --> < a , ID >::stackOffset=-6
+ 15 --> < i , ID >::stackOffset=-2
+ 16 --> < j , ID >::stackOffset=-4
 
 ScopeTable # 1
  7 --> < main , ID >::stackOffset=0
@@ -201,283 +355,98 @@ ScopeTable # 1
 Line 7: statement : compound_statement
 
 {
-a=10;
+for(j=0;j<=i;j++)println(a);
 }
 
 
-Line 8: variable : ID
+Line 7: statement : FOR LPAREN expression_statement expression_statement expression RPAREN statement
 
-a
-
-Line 8: factor : CONST_INT
-
-11
-
-Line 8: unary_expression : factor
-
-11
-
-Line 8: term : unary_expression
-
-11
-
-Line 8: simple_expression : term
-
-11
-
-Line 8: rel_expression : simple_expression
-
-11
-
-Line 8: logic_expression : rel_expression
-
-11
-
-Line 8: expression : variable ASSIGNOP logic_expression
-
-a=11
-
-Line 8: expression_statement : expression SEMICOLON
-
-a=11;
-
-Line 8: statement : expression_statement
-
-a=11;
-
-Line 8: statement : IF LPAREN expression RPAREN statement ELSE statement
-
-if(0){
-a=10;
+for(i=0;i<5;i++){
+for(j=0;j<=i;j++)println(a);
 }
-else
-a=11;
 
-Line 8: statements : statement
 
-if(0){
-a=10;
+Line 7: statements : statements statement
+
+int i,j,a;
+a=0;
+for(i=0;i<5;i++){
+for(j=0;j<=i;j++)println(a);
 }
-else
-a=11;
 
-Line 9: compound_statement : LCURL statements RCURL
+
+Line 8: compound_statement : LCURL statements RCURL
 
 {
-if(0){
-a=10;
-}
-else
-a=11;
-}
-
-
-
-
-ScopeTable # 1.1.1
-
-ScopeTable # 1.1
- 7 --> < a , ID >::stackOffset=-2
- 8 --> < b , ID >::stackOffset=-4
- 9 --> < c , ID >::stackOffset=-10
-
-ScopeTable # 1
- 7 --> < main , ID >::stackOffset=0
-
-
-
-Line 9: statement : compound_statement
-
-{
-if(0){
-a=10;
-}
-else
-a=11;
-}
-
-
-Line 10: variable : ID
-
-a
-
-Line 10: factor : CONST_INT
-
-0
-
-Line 10: unary_expression : factor
-
-0
-
-Line 10: term : unary_expression
-
-0
-
-Line 10: simple_expression : term
-
-0
-
-Line 10: rel_expression : simple_expression
-
-0
-
-Line 10: logic_expression : rel_expression
-
-0
-
-Line 10: expression : variable ASSIGNOP logic_expression
-
-a=0
-
-Line 10: expression_statement : expression SEMICOLON
-
+int i,j,a;
 a=0;
-
-Line 10: statement : expression_statement
-
-a=0;
-
-Line 10: statement : IF LPAREN expression RPAREN statement ELSE statement
-
-if(1){
-if(0){
-a=10;
+for(i=0;i<5;i++){
+for(j=0;j<=i;j++)println(a);
 }
-else
-a=11;
-}
-else
-a=0;
 
-Line 10: statements : statements statement
-
-int a,b,c[3];
-b=3;
-if(1){
-if(0){
-a=10;
-}
-else
-a=11;
-}
-else
-a=0;
-
-Line 11: statement : PRINTLN LPAREN ID RPAREN SEMICOLON
-
-println(a);
-
-Line 11: statements : statements statement
-
-int a,b,c[3];
-b=3;
-if(1){
-if(0){
-a=10;
-}
-else
-a=11;
-}
-else
-a=0;
-println(a);
-
-Line 12: compound_statement : LCURL statements RCURL
-
-{
-int a,b,c[3];
-b=3;
-if(1){
-if(0){
-a=10;
-}
-else
-a=11;
-}
-else
-a=0;
-println(a);
 }
 
 
 
 
 ScopeTable # 1.1
- 7 --> < a , ID >::stackOffset=-2
- 8 --> < b , ID >::stackOffset=-4
- 9 --> < c , ID >::stackOffset=-10
+ 7 --> < a , ID >::stackOffset=-6
+ 15 --> < i , ID >::stackOffset=-2
+ 16 --> < j , ID >::stackOffset=-4
 
 ScopeTable # 1
  7 --> < main , ID >::stackOffset=0
 
 
 
-Line 12: func_definition : type_specifier ID LPAREN RPAREN compound_statement
+Line 8: func_definition : type_specifier ID LPAREN RPAREN compound_statement
 
 int main(){
-int a,b,c[3];
-b=3;
-if(1){
-if(0){
-a=10;
-}
-else
-a=11;
-}
-else
+int i,j,a;
 a=0;
-println(a);
+for(i=0;i<5;i++){
+for(j=0;j<=i;j++)println(a);
+}
+
 }
 
 
 
 
-Line 12: unit : func_definition
+Line 8: unit : func_definition
 
 int main(){
-int a,b,c[3];
-b=3;
-if(1){
-if(0){
-a=10;
-}
-else
-a=11;
-}
-else
+int i,j,a;
 a=0;
-println(a);
+for(i=0;i<5;i++){
+for(j=0;j<=i;j++)println(a);
+}
+
 }
 
 
 
 
-Line 12: program : unit
+Line 8: program : unit
 
 int main(){
-int a,b,c[3];
-b=3;
-if(1){
-if(0){
-a=10;
-}
-else
-a=11;
-}
-else
+int i,j,a;
 a=0;
-println(a);
+for(i=0;i<5;i++){
+for(j=0;j<=i;j++)println(a);
+}
+
 }
 
 
 
 
-Line 13: start : program
+Line 9: start : program
 
 
 ScopeTable # 1
  7 --> < main , ID >::stackOffset=0
 
 
-Total lines: 13
+Total lines: 9
 Total errors: 0
