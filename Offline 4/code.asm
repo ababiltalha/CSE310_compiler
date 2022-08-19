@@ -16,39 +16,49 @@ PUSH BP
 MOV BP, SP
 PUSH AX ; a decl
 PUSH AX ; b decl
-PUSH AX ; c decl
-PUSH AX ; i decl
+PUSH AX ; c[2] decl
+PUSH AX ; c[1] decl
+PUSH AX ; c[0] decl
 MOV AX, -4[BP]
 PUSH AX ; b called
-PUSH 0
-POP AX ; r-val of assignop 0
-MOV -4[BP], AX ; assigning 0 to b
-POP AX
-MOV AX, -6[BP]
-PUSH AX ; c called
 PUSH 3
 POP AX ; r-val of assignop 3
-MOV -6[BP], AX ; assigning 3 to c
+MOV -4[BP], AX ; assigning 3 to b
 POP AX
-label_0: ; while loop begin
-MOV AX, -6[BP]
-PUSH AX ; c called
-DEC AX
-MOV -6[BP], AX
-POP CX
-CMP CX, 0
-JE label_1
-MOV AX, -4[BP]
-PUSH AX ; b called
-INC AX
-MOV -4[BP], AX
+PUSH 1
+POP AX ; expr in AX
+CMP AX, 0 ; checking expr
+JE label_else_1
+PUSH 0
+POP AX ; expr in AX
+CMP AX, 0 ; checking expr
+JE label_else_2
+MOV AX, -2[BP]
+PUSH AX ; a called
+PUSH 10
+POP AX ; r-val of assignop 10
+MOV -2[BP], AX ; assigning 10 to a
 POP AX
-JMP label_0 ; back to top of loop
-label_1:
-MOV AX, -4[BP]
-CALL PRINT ; argument b in AX
-MOV AX, -6[BP]
-CALL PRINT ; argument c in AX
+JMP label_endif_2
+label_else_2: ; else label
+MOV AX, -2[BP]
+PUSH AX ; a called
+PUSH 11
+POP AX ; r-val of assignop 11
+MOV -2[BP], AX ; assigning 11 to a
+POP AX
+label_endif_2: ; end if label
+JMP label_endif_1
+label_else_1: ; else label
+MOV AX, -2[BP]
+PUSH AX ; a called
+PUSH 0
+POP AX ; r-val of assignop 0
+MOV -2[BP], AX ; assigning 0 to a
+POP AX
+label_endif_1: ; end if label
+MOV AX, -2[BP]
+CALL PRINT ; argument a in AX
 main_EXIT:
 	MOV SP, BP ; Restoring SP
 	POP BP

@@ -36,6 +36,15 @@ string newLabel() {
 	return "label_"+to_string(labelCount++);
 }
 
+int ifCount=0;
+int whileCount=0;
+int forCount=0;
+
+stack<int> ifCountStack;
+stack<int> whileCountStack;
+stack<int> forCountStack;
+
+
 void printUtilFunctions() {
 	fprintf(asmout, "\nPRINT PROC ; PRINTS A WORD INTEGER IN AX\n\
 	LEA SI, NUMBER_STRING ; IS 00000\n\
@@ -692,32 +701,37 @@ statement : var_declaration
 	  {
 		$$ = new SymbolInfo($1->getName()+$2->getName(), "statement");
 		fprintf(logout, "Line %d: statement : IF LPAREN expression RPAREN statement\n\n%s\n\n", lineCount, $$->getName().c_str());
-		fprintf(asmout, "%s: ; end if label\n", labelElse.c_str());
+		fprintf(asmout, "%s: ; end if label\n", ("label_else_"+to_string(ifCountStack.top())).c_str());
+		ifCountStack.pop();
 	  }
 	  | if_expr statement ELSE {
-		labelEndIf= newLabel();
-		fprintf(asmout, "JMP %s\n", labelEndIf.c_str());
-		fprintf(asmout, "%s: ; else label\n", labelElse.c_str());
+		// labelEndIf= "label_endif_"+to_string(ifCount);
+		fprintf(asmout, "JMP %s\n", ("label_endif_"+to_string(ifCountStack.top())).c_str());
+		fprintf(asmout, "%s: ; else label\n", ("label_else_"+to_string(ifCountStack.top())).c_str());
 	  } statement
 	  {
 		$$ = new SymbolInfo($1->getName()+$2->getName()+"else\n"+$5->getName(), "statement");
 		fprintf(logout, "Line %d: statement : IF LPAREN expression RPAREN statement ELSE statement\n\n%s\n\n", lineCount, $$->getName().c_str());
-		fprintf(asmout, "%s: ; end if label\n", labelEndIf.c_str());
+		fprintf(asmout, "%s: ; end if label\n", ("label_endif_"+to_string(ifCountStack.top())).c_str());
+		ifCountStack.pop();
 	  }
 	  | WHILE 
 	  {
-		labelLoopStart= newLabel();
-		fprintf(asmout, "%s: ; while loop begin\n", labelLoopStart.c_str());
+		whileCount++;
+		whileCountStack.push(whileCount);
+		// labelLoopStart= "label_while_start_"+to_string(whileCount);
+		fprintf(asmout, "%s: ; while loop begin\n", ("label_while_start_"+to_string(whileCountStack.top())).c_str());
 	  } LPAREN expression RPAREN 
 	  {
-		labelLoopEnd= newLabel();
-		fprintf(asmout, "POP CX\nCMP CX, 0\nJE %s\n", labelLoopEnd.c_str());
+		// labelLoopEnd= "label_while_end_"+to_string(whileCount);
+		fprintf(asmout, "POP CX\nCMP CX, 0\nJE %s\n", ("label_while_end_"+to_string(whileCountStack.top())).c_str());
 	  } statement
 	  {
 		$$ = new SymbolInfo("while("+$4->getName()+")"+$7->getName(), "statement");
 		fprintf(logout, "Line %d: statement : WHILE LPAREN expression RPAREN statement\n\n%s\n\n", lineCount, $$->getName().c_str());
 		//Offline 4 code
-		fprintf(asmout, "JMP %s ; back to top of loop\n%s:\n", labelLoopStart.c_str(), labelLoopEnd.c_str());
+		fprintf(asmout, "JMP %s ; back to top of loop\n%s:\n", ("label_while_start_"+to_string(whileCountStack.top())).c_str(), ("label_while_end_"+to_string(whileCountStack.top())).c_str());
+		whileCountStack.pop();
 	  }
 	  | PRINTLN LPAREN ID RPAREN SEMICOLON
 	  { // move to AX from stack 
@@ -760,9 +774,11 @@ statement : var_declaration
 
 if_expr :	IF LPAREN expression RPAREN 
 	{
-		labelElse= newLabel();
+		ifCount++;
+		ifCountStack.push(ifCount);
+		// labelElse= "label_else_"+to_string(ifCount);
 		fprintf(asmout, "POP AX ; expr in AX\nCMP AX, 0 ; checking expr\n");
-		fprintf(asmout, "JE %s\n", labelElse.c_str());
+		fprintf(asmout, "JE %s\n", ("label_else_"+to_string(ifCountStack.top())).c_str());
 		$$= new SymbolInfo("if("+$3->getName()+")", "statement");
 	} 	
 
