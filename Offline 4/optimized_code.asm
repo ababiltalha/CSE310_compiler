@@ -15,176 +15,148 @@ main PROC
 	MOV DS, AX
 PUSH BP
 MOV BP, SP
-PUSH AX ; i decl
-PUSH AX ; j decl
-PUSH AX ; k decl
-PUSH AX ; ll decl
-PUSH AX ; m decl
-PUSH AX ; n decl
-PUSH AX ; o decl
-PUSH AX ; p decl
+PUSH AX ; a decl
+PUSH AX ; b decl
+PUSH AX ; c[2] decl
+PUSH AX ; c[1] decl
+PUSH AX ; c[0] decl
 MOV AX, -2[BP]
-PUSH AX ; i called
-;PUSH 1
-MOV AX, 1
-MOV -2[BP], AX ; assigning 1 to i
-POP AX
-MOV AX, -2[BP]
-CALL PRINT ; argument i in AX
-MOV AX, -4[BP]
-PUSH AX ; j called
-PUSH 5
-;PUSH 8
-MOV AX, 8
+PUSH AX ; a called
+PUSH 1
+PUSH 2
+;PUSH 3
+MOV AX, 3
 POP BX
 ADD AX, BX
-;PUSH AX ; 5+8 pushed
-;POP AX ; r-val of assignop 5+8
-MOV -4[BP], AX ; assigning 5+8 to j
-POP AX
-MOV AX, -4[BP]
-CALL PRINT ; argument j in AX
-MOV AX, -6[BP]
-PUSH AX ; k called
-MOV AX, -2[BP]
-PUSH AX ; i called
-PUSH 2
-MOV AX, -4[BP]
-;PUSH AX ; j called
+;PUSH AX ; 2+3 pushed
 MOV BX, AX
 POP AX
 IMUL BX
-;PUSH AX ; result of 2*j is in AX, pushed
-;POP AX
-POP BX
-ADD AX, BX
-;PUSH AX ; i+2*j pushed
-;POP AX ; r-val of assignop i+2*j
-MOV -6[BP], AX ; assigning i+2*j to k
-POP AX
-MOV AX, -6[BP]
-CALL PRINT ; argument k in AX
-MOV AX, -10[BP]
-PUSH AX ; m called
-MOV AX, -6[BP]
-PUSH AX ; k called
-PUSH 9
+PUSH AX ; result of 1*(2+3) is in AX, pushed
+PUSH 3
 MOV DX, 0 ; DX:AX = 0000:AX
 POP BX
 POP AX
 IDIV BX
-;PUSH DX ; remainder of k%9 is in DX
+;PUSH DX ; remainder of 1*(2+3)%3 is in DX
 MOV AX, DX
-MOV -10[BP], AX ; assigning k%9 to m
+MOV -2[BP], AX ; assigning 1*(2+3)%3 to a
 POP AX
-MOV AX, -10[BP]
-CALL PRINT ; argument m in AX
-MOV AX, -12[BP]
-PUSH AX ; n called
-MOV AX, -10[BP]
-PUSH AX ; m called
-MOV AX, -8[BP]
-;PUSH AX ; ll called
-;POP AX
+MOV AX, -4[BP]
+PUSH AX ; b called
+PUSH 1
+;PUSH 5
+MOV AX, 5
 POP BX ; left side value
-CMP BX, AX ; evaluating m<=ll
-JNLE label_1
-PUSH 1 ; if m<=ll is true
+CMP BX, AX ; evaluating 1<5
+JNL label_1
+PUSH 1 ; if 1<5 is true
 JMP label_0
 label_1:
-PUSH 0 ; if m<=ll is false
+PUSH 0 ; if 1<5 is false
 label_0:
-POP AX ; r-val of assignop m<=ll
-MOV -12[BP], AX ; assigning m<=ll to n
+POP AX ; r-val of assignop 1<5
+MOV -4[BP], AX ; assigning 1<5 to b
 POP AX
-MOV AX, -12[BP]
-CALL PRINT ; argument n in AX
-MOV AX, -14[BP]
-PUSH AX ; o called
+;PUSH 0
+MOV BX, 0
+SHL BX, 1
+ADD BX, -10
+;ADD BX, BP
+PUSH BP
+ADD BP, BX
+MOV AX, [BP]
+POP BP
+;MOV AX, [BX]
+PUSH AX ; value of c[0]
+PUSH BX ; index 0
+;PUSH 2
+MOV AX, 2
+POP BX
+;MOV [BX], AX
+PUSH BP
+ADD BP, BX
+MOV [BP], AX
+POP BP ; assigning to c[0]
+POP AX
 MOV AX, -2[BP]
-PUSH AX ; i called
+PUSH AX ; a called
 MOV AX, -4[BP]
-;PUSH AX ; j called
-;POP AX
-POP BX ; left side value
-CMP BX, AX ; evaluating i!=j
+;PUSH AX ; b called
+MOV BX, AX
+POP AX ; left side value
+CMP AX, 0
 JE label_3
-PUSH 1 ; if i!=j is true
+CMP BX, 0
+JE label_3
+PUSH 1
 JMP label_2
 label_3:
-PUSH 0 ; if i!=j is false
-label_2:
-POP AX ; r-val of assignop i!=j
-MOV -14[BP], AX ; assigning i!=j to o
-POP AX
-MOV AX, -14[BP]
-CALL PRINT ; argument o in AX
-MOV AX, -16[BP]
-PUSH AX ; p called
-MOV AX, -12[BP]
-PUSH AX ; n called
-MOV AX, -14[BP]
-;PUSH AX ; o called
-MOV BX, AX
-POP AX ; left side value
-CMP AX, 0
-JNE label_5
-CMP BX, 0
-JNE label_5
-PUSH 0
-JMP label_4
-label_5:
-PUSH 1 ; total false
-label_4:
-POP AX ; r-val of assignop n||o
-MOV -16[BP], AX ; assigning n||o to p
-POP AX
-MOV AX, -16[BP]
-CALL PRINT ; argument p in AX
-MOV AX, -16[BP]
-PUSH AX ; p called
-MOV AX, -12[BP]
-PUSH AX ; n called
-MOV AX, -14[BP]
-;PUSH AX ; o called
-MOV BX, AX
-POP AX ; left side value
-CMP AX, 0
-JE label_7
-CMP BX, 0
-JE label_7
-PUSH 1
-JMP label_6
-label_7:
 PUSH 0 ; total false
-label_6:
-POP AX ; r-val of assignop n&&o
-MOV -16[BP], AX ; assigning n&&o to p
-POP AX
-MOV AX, -16[BP]
-CALL PRINT ; argument p in AX
-MOV AX, -16[BP]
-PUSH AX ; p called
-INC AX
-MOV -16[BP], AX
-POP AX
-MOV AX, -16[BP]
-CALL PRINT ; argument p in AX
-MOV AX, -6[BP]
-PUSH AX ; k called
-MOV AX, -16[BP]
-;PUSH AX ; p called
-;POP AX
-NEG AX ; -Ючь
-;PUSH AX
-;POP AX ; r-val of assignop -p
-MOV -6[BP], AX ; assigning -p to k
-POP AX
-MOV AX, -6[BP]
-CALL PRINT ; argument k in AX
+label_2:
+POP AX ; expr in AX
+CMP AX, 0 ; checking expr
+JE label_else_1
 ;PUSH 0
-MOV AX, 0
-	JMP main_EXIT
+MOV BX, 0
+SHL BX, 1
+ADD BX, -10
+;ADD BX, BP
+PUSH BP
+ADD BP, BX
+MOV AX, [BP]
+POP BP
+;MOV AX, [BX]
+PUSH AX ; value of c[0]
+;PUSH BX ; index 0
+;POP BX
+POP AX
+INC AX ; c[0]++
+PUSH BP
+ADD BP, BX
+MOV [BP], AX
+POP BP
+POP AX
+JMP label_endif_1
+label_else_1: ; else label
+;PUSH 1
+MOV BX, 1
+SHL BX, 1
+ADD BX, -10
+;ADD BX, BP
+PUSH BP
+ADD BP, BX
+MOV AX, [BP]
+POP BP
+;MOV AX, [BX]
+PUSH AX ; value of c[1]
+PUSH BX ; index 1
+;PUSH 0
+MOV BX, 0
+SHL BX, 1
+ADD BX, -10
+;ADD BX, BP
+PUSH BP
+ADD BP, BX
+MOV AX, [BP]
+POP BP
+;MOV AX, [BX]
+PUSH AX ; value of c[0]
+;PUSH BX ; index 0
+;POP BX ; r-value, no need for index
+POP AX ; r-val of assignop c[0]
+POP BX
+;MOV [BX], AX
+PUSH BP
+ADD BP, BX
+MOV [BP], AX
+POP BP ; assigning to c[1]
+POP AX
+label_endif_1: ; end if label
+MOV AX, -2[BP]
+CALL PRINT ; argument a in AX
+MOV AX, -4[BP]
+CALL PRINT ; argument b in AX
 main_EXIT:
 	MOV SP, BP ; Restoring SP
 	POP BP

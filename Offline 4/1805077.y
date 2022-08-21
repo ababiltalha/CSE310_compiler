@@ -890,6 +890,7 @@ variable : ID
 			}
 		}
 		fprintf(logout, "Line %d: variable : ID LTHIRD expression RTHIRD\n\n%s\n\n", lineCount, $$->getName().c_str());
+		// cout<<111111<<endl;
 	 }
 	 | ID LTHIRD RTHIRD 
 	 {
@@ -951,17 +952,24 @@ expression : logic_expression
 				}
 			}
 			string varName= $1->getName();
+			// cout<<varName;
 
 			fprintf(asmout, "POP AX ; r-val of assignop %s\n", $3->getName().c_str());
-			SymbolInfo* temp = table.lookUpSymbol(varName);
+			
+			SymbolInfo* temp = table.lookUpSymbol(getArrayName(varName));
+			// cout<<$1->getName()<<endl; //debug
 			if(temp->isGlobal()){
+				// cout<<$1->getName()<<endl; //debug
 				fprintf(asmout, "MOV %s, AX\n", temp->getName().c_str());
 			} else {
+				// cout<<varName<<endl;
 				if (varName.find("[") != string::npos){
+					// cout<<"aaaaaaaaa"<<$1->getName()<<endl; //debug
 					fprintf(asmout, "POP BX\n");
-					fprintf(asmout, ";MOV [BX], AX\nPUSH BP\nADD BP, BX\nMOV [BP], AX\nPOP BP ; assigning %s to %s\n", $3->getName().c_str(), $1->getName().c_str());
+					fprintf(asmout, ";MOV [BX], AX\nPUSH BP\nADD BP, BX\nMOV [BP], AX\nPOP BP ; assigning to %s\n", $1->getName().c_str());
 				}
 				else {
+					// cout<<$1->getName()<<endl; //debug
 					fprintf(asmout, "MOV %d[BP], AX ; assigning %s to %s\n", $1->getStackOffset(), $3->getName().c_str(), $1->getName().c_str());
 				}
 				// fprintf(asmout, "POP AX\n");

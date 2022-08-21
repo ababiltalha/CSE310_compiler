@@ -1,38 +1,12 @@
 int main(){
- 
-	int i,j,k,ll,m,n,o,p;
- 
-	i = 1;
-	println(i);
-	j = 5 + 8;
-	println(j);
-	k = i + 2*j;
-	println(k);
-
-	m = k%9;
-	println(m);
- 
-	n = m <= ll;
-	println(n);
- 
-	o = i != j;
-	println(o);
- 
-	p = n || o;
-	println(p);
- 
-	p = n && o;
-	println(p);
-	
-	p++;
-	println(p);
- 
-	k = -p;
-	println(k);
- 
-  
- 
- 
-	return 0;
+    int a,b,c[3];
+    a=1*(2+3)%3;
+    b= 1<5;
+    c[0]=2;
+    if(a && b)
+        c[0]++;
+    else
+        c[1]=c[0];
+    println(a);
+    println(b);
 }
-
