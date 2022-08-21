@@ -12,6 +12,10 @@ extern int errorCount;
 
 // Offline 4 code
 FILE *asmout;
+ifstream asmly;
+ofstream optimizely;
+// int lineNumber=0;
+vector<string> lineVector(1000);
 int tempCount=0;
 int labelCount=0;
 int currentOffset=0; // offset from BP of that particular variable
@@ -19,10 +23,27 @@ int parameterCount=0;
 bool isMainDefined=false;
 string currentFunc="";
 
-string labelElse="aaaaaaaaa";
-string labelEndIf="bbbbbbbbbb";
-string labelLoopStart="ccccccc";
-string labelLoopEnd="dddd"; 
+vector<string> split(const string &s){
+    vector<string> elements;
+    string item = "";
+    for (int i = 0; i < s.length(); i++) {
+        if (s[i] == ' ' || s[i] == ',' || s[i] == '\t') {
+            if (item != "") {
+                elements.push_back(item);
+                item = "";
+            }
+        }
+        else {
+            item += s[i];
+        }
+    }
+
+    if (item != "") {
+        elements.push_back(item);
+    }
+
+    return elements;
+}
 
 void resetCurrentOffset(){
 	currentOffset=0;
@@ -853,7 +874,7 @@ variable : ID
 					fprintf(logout, "Error at line %d: Expression inside third brackets not an integer\n\n", lineCount);
 				}
 				if(temp->isGlobal()) {
-					fprintf(asmout, "POP BX ; popped index expr\nSHL BX, 1\nMOV SI, %s\nMOV AX, BX[SI]\n ; %s called\n", temp->getName().c_str(), temp->getName().c_str()); //! handle global array index calc
+					fprintf(asmout, "POP BX ; popped index expr\nSHL BX, 1\nMOV SI, %s\nMOV AX, BX[SI]\n ; %s called\n", temp->getName().c_str(), temp->getName().c_str()); 
 				} else {
 					fprintf(asmout, "POP BX ; popped index expr %s\nSHL BX, 1\nADD BX, %d\n;ADD BX, BP\nPUSH BP\nADD BP, BX\nMOV AX, [BP]\nPOP BP\n;MOV AX, [BX]\nPUSH AX ; value of %s[%s]\nPUSH BX ; index %s\n",
 						$3->getName().c_str(), temp->getStackOffset(), temp->getName().c_str(), $3->getName().c_str(), $3->getName().c_str());
@@ -1164,10 +1185,14 @@ factor	: variable
 				FunctionInfo* ftemp= (FunctionInfo*) temp;
 				returnType= ftemp->getReturnType();
 				splitParameterTypeList($3->getType(),',');
+				// cout<<parameterTypeList[0]<<" "<<ftemp->getParameterTypeList().size()<<endl;
 				if(parameterTypeList.size()!=ftemp->getParameterTypeList().size()){
-					errorCount++;
-					fprintf(errorout, "Error at line %d: Total number of arguments mismatch in function %s\n\n", lineCount, funcName.c_str());
-					fprintf(logout, "Error at line %d: Total number of arguments mismatch in function %s\n\n", lineCount, funcName.c_str());
+					if(parameterTypeList[0]=="void");
+					else {
+						errorCount++;
+						fprintf(errorout, "Error at line %d: Total number of arguments mismatch in function %s\n\n", lineCount, funcName.c_str());
+						fprintf(logout, "Error at line %d: Total number of arguments mismatch in function %s\n\n", lineCount, funcName.c_str());
+					}
 				}
 				else {
 					for(int i=0; i<ftemp->getParameterTypeList().size(); i++){
@@ -1306,7 +1331,77 @@ int main(int argc,char *argv[])
 	fclose(logout);
 	fclose(errorout);
 	fclose(asmout);
+
+	if(errorCount>0){
+		asmout= fopen("code.asm","w");
+		fclose(asmout);
+	}
 	
+
+	string line, nextLine;
+	vector<string> portions, nextPortions;
+	lineVector.clear();
+	asmly.open("code.asm");
+	optimizely.open("optimized_code.asm");
+	
+	while (getline (asmly,line)) 
+		lineVector.push_back(line);
+    
+	if(lineVector.size()==0) {
+		asmly.close();
+		optimizely.close();	
+		return 0;
+	}
+
+    for (int i = 0; i < lineVector.size()-1; i++)
+    {
+        if((split(lineVector[i]).size()==0))
+            continue;
+        if((split(lineVector[i])[0].find(";") != string::npos))
+            continue;
+        
+        line=lineVector[i];
+        nextLine=lineVector[i+1];
+        portions=split(line);
+        nextPortions=split(nextLine);
+		if(portions[0]=="PUSH"){
+            if(nextPortions[0]=="POP"){ 
+                if(portions[1]==nextPortions[1]){ // PUSH AX ; POP AX
+                    lineVector[i]=";"+lineVector[i];
+                    lineVector[i+1]=";"+lineVector[i+1];
+                }
+                else { // PUSH 7 ; POP AX
+                    lineVector[i]=";"+lineVector[i];
+                    lineVector[i+1]="MOV "+nextPortions[1]+", "+portions[1];
+                }
+            }
+        } 
+
+        if(portions[0]=="MOVE"){
+            if(portions[1]==portions[2]){ // MOV AX, AX
+                lineVector[i]=";"+lineVector[i];
+            }
+            if(nextPortions[0]=="MOVE"){ 
+                if((portions[1]==nextPortions[2]) && (portions[2]==nextPortions[1])){ // MOV AX, BX ; MOV BX, AX
+                    lineVector[i+1]=";"+lineVector[i+1];
+                }
+                if(portions[1]==nextPortions[1]){ // MOV AX, BX ; MOV AX, CX
+                    lineVector[i]=";"+lineVector[i];
+                }
+            }
+        }
+
+
+    }
+
+
+    for (int i = 0; i < lineVector.size(); i++)
+    	optimizely<<lineVector[i]<<endl;
+    
+	
+	asmly.close();
+	optimizely.close();
+
 	return 0;
 }
 

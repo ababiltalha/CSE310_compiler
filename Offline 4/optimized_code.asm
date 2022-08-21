@@ -25,8 +25,8 @@ PUSH AX ; o decl
 PUSH AX ; p decl
 MOV AX, -2[BP]
 PUSH AX ; i called
-PUSH 1
-POP AX ; r-val of assignop 1
+;PUSH 1
+MOV AX, 1
 MOV -2[BP], AX ; assigning 1 to i
 POP AX
 MOV AX, -2[BP]
@@ -34,12 +34,12 @@ CALL PRINT ; argument i in AX
 MOV AX, -4[BP]
 PUSH AX ; j called
 PUSH 5
-PUSH 8
-POP AX
+;PUSH 8
+MOV AX, 8
 POP BX
 ADD AX, BX
-PUSH AX ; 5+8 pushed
-POP AX ; r-val of assignop 5+8
+;PUSH AX ; 5+8 pushed
+;POP AX ; r-val of assignop 5+8
 MOV -4[BP], AX ; assigning 5+8 to j
 POP AX
 MOV AX, -4[BP]
@@ -50,16 +50,16 @@ MOV AX, -2[BP]
 PUSH AX ; i called
 PUSH 2
 MOV AX, -4[BP]
-PUSH AX ; j called
-POP BX
+;PUSH AX ; j called
+MOV BX, AX
 POP AX
 IMUL BX
-PUSH AX ; result of 2*j is in AX, pushed
-POP AX
+;PUSH AX ; result of 2*j is in AX, pushed
+;POP AX
 POP BX
 ADD AX, BX
-PUSH AX ; i+2*j pushed
-POP AX ; r-val of assignop i+2*j
+;PUSH AX ; i+2*j pushed
+;POP AX ; r-val of assignop i+2*j
 MOV -6[BP], AX ; assigning i+2*j to k
 POP AX
 MOV AX, -6[BP]
@@ -73,8 +73,8 @@ MOV DX, 0 ; DX:AX = 0000:AX
 POP BX
 POP AX
 IDIV BX
-PUSH DX ; remainder of k%9 is in DX
-POP AX ; r-val of assignop k%9
+;PUSH DX ; remainder of k%9 is in DX
+MOV AX, DX
 MOV -10[BP], AX ; assigning k%9 to m
 POP AX
 MOV AX, -10[BP]
@@ -84,8 +84,8 @@ PUSH AX ; n called
 MOV AX, -10[BP]
 PUSH AX ; m called
 MOV AX, -8[BP]
-PUSH AX ; ll called
-POP AX
+;PUSH AX ; ll called
+;POP AX
 POP BX ; left side value
 CMP BX, AX ; evaluating m<=ll
 JNLE label_1
@@ -104,8 +104,8 @@ PUSH AX ; o called
 MOV AX, -2[BP]
 PUSH AX ; i called
 MOV AX, -4[BP]
-PUSH AX ; j called
-POP AX
+;PUSH AX ; j called
+;POP AX
 POP BX ; left side value
 CMP BX, AX ; evaluating i!=j
 JE label_3
@@ -124,8 +124,8 @@ PUSH AX ; p called
 MOV AX, -12[BP]
 PUSH AX ; n called
 MOV AX, -14[BP]
-PUSH AX ; o called
-POP BX
+;PUSH AX ; o called
+MOV BX, AX
 POP AX ; left side value
 CMP AX, 0
 JNE label_5
@@ -146,8 +146,8 @@ PUSH AX ; p called
 MOV AX, -12[BP]
 PUSH AX ; n called
 MOV AX, -14[BP]
-PUSH AX ; o called
-POP BX
+;PUSH AX ; o called
+MOV BX, AX
 POP AX ; left side value
 CMP AX, 0
 JE label_7
@@ -173,17 +173,17 @@ CALL PRINT ; argument p in AX
 MOV AX, -6[BP]
 PUSH AX ; k called
 MOV AX, -16[BP]
-PUSH AX ; p called
-POP AX
+;PUSH AX ; p called
+;POP AX
 NEG AX ; -Ючь
-PUSH AX
-POP AX ; r-val of assignop -p
+;PUSH AX
+;POP AX ; r-val of assignop -p
 MOV -6[BP], AX ; assigning -p to k
 POP AX
 MOV AX, -6[BP]
 CALL PRINT ; argument k in AX
-PUSH 0
-POP AX
+;PUSH 0
+MOV AX, 0
 	JMP main_EXIT
 main_EXIT:
 	MOV SP, BP ; Restoring SP

@@ -82,6 +82,10 @@ extern int errorCount;
 
 // Offline 4 code
 FILE *asmout;
+ifstream asmly;
+ofstream optimizely;
+// int lineNumber=0;
+vector<string> lineVector(1000);
 int tempCount=0;
 int labelCount=0;
 int currentOffset=0; // offset from BP of that particular variable
@@ -89,10 +93,27 @@ int parameterCount=0;
 bool isMainDefined=false;
 string currentFunc="";
 
-string labelElse="aaaaaaaaa";
-string labelEndIf="bbbbbbbbbb";
-string labelLoopStart="ccccccc";
-string labelLoopEnd="dddd"; 
+vector<string> split(const string &s){
+    vector<string> elements;
+    string item = "";
+    for (int i = 0; i < s.length(); i++) {
+        if (s[i] == ' ' || s[i] == ',' || s[i] == '\t') {
+            if (item != "") {
+                elements.push_back(item);
+                item = "";
+            }
+        }
+        else {
+            item += s[i];
+        }
+    }
+
+    if (item != "") {
+        elements.push_back(item);
+    }
+
+    return elements;
+}
 
 void resetCurrentOffset(){
 	currentOffset=0;
@@ -235,7 +256,7 @@ void yyerror(char *s)
 
 
 
-#line 239 "y.tab.c"
+#line 260 "y.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -366,11 +387,11 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 169 "1805077.y"
+#line 190 "1805077.y"
 
 	SymbolInfo* symbol;
 
-#line 374 "y.tab.c"
+#line 395 "y.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -854,15 +875,15 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   181,   181,   181,   194,   199,   206,   211,   216,   223,
-     249,   272,   271,   354,   353,   428,   433,   438,   443,   448,
-     452,   463,   473,   495,   569,   574,   579,   586,   592,   604,
-     610,   622,   632,   641,   651,   660,   663,   668,   675,   678,
-     683,   688,   693,   697,   703,   693,   715,   722,   722,   734,
-     740,   733,   751,   766,   792,   802,   807,   815,   837,   873,
-     903,   908,   954,   959,   988,   993,  1036,  1041,  1057,  1060,
-    1065,  1105,  1122,  1137,  1144,  1151,  1205,  1211,  1217,  1222,
-    1235,  1249,  1255,  1261,  1268
+       0,   202,   202,   202,   215,   220,   227,   232,   237,   244,
+     270,   293,   292,   375,   374,   449,   454,   459,   464,   469,
+     473,   484,   494,   516,   590,   595,   600,   607,   613,   625,
+     631,   643,   653,   662,   672,   681,   684,   689,   696,   699,
+     704,   709,   714,   718,   724,   714,   736,   743,   743,   755,
+     761,   754,   772,   787,   813,   823,   828,   836,   858,   894,
+     924,   929,   975,   980,  1009,  1014,  1057,  1062,  1078,  1081,
+    1086,  1126,  1143,  1158,  1165,  1172,  1230,  1236,  1242,  1247,
+    1260,  1274,  1280,  1286,  1293
 };
 #endif
 
@@ -1533,74 +1554,74 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* $@1: %empty  */
-#line 181 "1805077.y"
+#line 202 "1805077.y"
         {
 		fprintf(asmout, ".MODEL SMALL\n");
 		fprintf(asmout, "\n.STACK 400H\n");
 		fprintf(asmout, "\n.DATA\n\n");
 		fprintf(asmout, "\n.CODE\n\tFLAG DB 0\n\tNL DB 13,10,\"$\"\n\tNUMBER_STRING DB \"00000$\" \n");
 	}
-#line 1544 "y.tab.c"
+#line 1565 "y.tab.c"
     break;
 
   case 3: /* start: $@1 program  */
-#line 186 "1805077.y"
+#line 207 "1805077.y"
                   {
 		fprintf(logout, "Line %d: start : program\n\n", lineCount);
 		printUtilFunctions();
 		if(isMainDefined) fprintf(asmout, "END MAIN\n");
 		// error count check and code dissolution
 	}
-#line 1555 "y.tab.c"
+#line 1576 "y.tab.c"
     break;
 
   case 4: /* program: program unit  */
-#line 195 "1805077.y"
+#line 216 "1805077.y"
         {
 		(yyval.symbol) = new SymbolInfo((yyvsp[-1].symbol)->getName()+"\n"+(yyvsp[0].symbol)->getName(),"program");
 		fprintf(logout, "Line %d: program : program unit\n\n%s\n\n\n", lineCount, (yyval.symbol)->getName().c_str());
 	}
-#line 1564 "y.tab.c"
+#line 1585 "y.tab.c"
     break;
 
   case 5: /* program: unit  */
-#line 200 "1805077.y"
+#line 221 "1805077.y"
         {
 		(yyval.symbol) = (yyvsp[0].symbol);
 		fprintf(logout, "Line %d: program : unit\n\n%s\n\n\n", lineCount, (yyval.symbol)->getName().c_str());
 	}
-#line 1573 "y.tab.c"
+#line 1594 "y.tab.c"
     break;
 
   case 6: /* unit: var_declaration  */
-#line 207 "1805077.y"
+#line 228 "1805077.y"
         {
 		(yyval.symbol) = (yyvsp[0].symbol);
 		fprintf(logout, "Line %d: unit : var_declaration\n\n%s\n\n\n", lineCount, (yyval.symbol)->getName().c_str());
 	}
-#line 1582 "y.tab.c"
+#line 1603 "y.tab.c"
     break;
 
   case 7: /* unit: func_declaration  */
-#line 212 "1805077.y"
+#line 233 "1805077.y"
         {
 		(yyval.symbol) = (yyvsp[0].symbol);
 		fprintf(logout, "Line %d: unit : func_declaration\n\n%s\n\n\n", lineCount, (yyval.symbol)->getName().c_str());
 	}
-#line 1591 "y.tab.c"
+#line 1612 "y.tab.c"
     break;
 
   case 8: /* unit: func_definition  */
-#line 217 "1805077.y"
+#line 238 "1805077.y"
         {
 		(yyval.symbol) = (yyvsp[0].symbol);
 		fprintf(logout, "Line %d: unit : func_definition\n\n%s\n\n\n", lineCount, (yyval.symbol)->getName().c_str());
 	}
-#line 1600 "y.tab.c"
+#line 1621 "y.tab.c"
     break;
 
   case 9: /* func_declaration: type_specifier ID LPAREN parameter_list RPAREN SEMICOLON  */
-#line 224 "1805077.y"
+#line 245 "1805077.y"
                 {
 			string returnType = (yyvsp[-5].symbol)->getName();
 			string funcName = (yyvsp[-4].symbol)->getName();
@@ -1626,11 +1647,11 @@ yyreduce:
 			fprintf(logout, "Line %d: func_declaration : type_specifier ID LPAREN parameter_list RPAREN SEMICOLON\n\n%s\n\n\n", lineCount, (yyval.symbol)->getName().c_str());
 			
 		}
-#line 1630 "y.tab.c"
+#line 1651 "y.tab.c"
     break;
 
   case 10: /* func_declaration: type_specifier ID LPAREN RPAREN SEMICOLON  */
-#line 250 "1805077.y"
+#line 271 "1805077.y"
                 {
 			string returnType = (yyvsp[-4].symbol)->getName();
 			string funcName = (yyvsp[-3].symbol)->getName();
@@ -1650,11 +1671,11 @@ yyreduce:
 			fprintf(logout, "Line %d: func_declaration : type_specifier ID LPAREN RPAREN SEMICOLON\n\n%s\n\n\n", lineCount, (yyval.symbol)->getName().c_str());
 			
 		}
-#line 1654 "y.tab.c"
+#line 1675 "y.tab.c"
     break;
 
   case 11: /* $@2: %empty  */
-#line 272 "1805077.y"
+#line 293 "1805077.y"
                 {
 			string returnType = (yyvsp[-4].symbol)->getName();
 			returnTypeToMatch= returnType;
@@ -1725,11 +1746,11 @@ yyreduce:
 
 			
 		}
-#line 1729 "y.tab.c"
+#line 1750 "y.tab.c"
     break;
 
   case 12: /* func_definition: type_specifier ID LPAREN parameter_list RPAREN $@2 compound_statement  */
-#line 341 "1805077.y"
+#line 362 "1805077.y"
                                      {
 			(yyval.symbol) = new SymbolInfo((yyvsp[-6].symbol)->getName()+" "+(yyvsp[-5].symbol)->getName()+"("+(yyvsp[-3].symbol)->getName()+")"+(yyvsp[0].symbol)->getName()+"\n","func_definition");
 			fprintf(logout, "Line %d: func_definition : type_specifier ID LPAREN parameter_list RPAREN compound_statement\n\n%s\n\n\n", lineCount, (yyval.symbol)->getName().c_str());
@@ -1742,11 +1763,11 @@ yyreduce:
 			fprintf(asmout, "%s ENDP\n", (yyvsp[-5].symbol)->getName().c_str());
 
 		}
-#line 1746 "y.tab.c"
+#line 1767 "y.tab.c"
     break;
 
   case 13: /* $@3: %empty  */
-#line 354 "1805077.y"
+#line 375 "1805077.y"
                 {	// set isMainDefined as true when ID.name == "main"
 			string returnType = (yyvsp[-3].symbol)->getName();
 			returnTypeToMatch= returnType;
@@ -1804,11 +1825,11 @@ yyreduce:
 
 			
 		}
-#line 1808 "y.tab.c"
+#line 1829 "y.tab.c"
     break;
 
   case 14: /* func_definition: type_specifier ID LPAREN RPAREN $@3 compound_statement  */
-#line 410 "1805077.y"
+#line 431 "1805077.y"
                                      {
 			(yyval.symbol) = new SymbolInfo((yyvsp[-5].symbol)->getName()+" "+(yyvsp[-4].symbol)->getName()+"()"+(yyvsp[0].symbol)->getName()+"\n","func_definition");
 			fprintf(logout, "Line %d: func_definition : type_specifier ID LPAREN RPAREN compound_statement\n\n%s\n\n\n", lineCount, (yyval.symbol)->getName().c_str());
@@ -1824,53 +1845,53 @@ yyreduce:
 
 			fprintf(asmout, "%s ENDP\n", (yyvsp[-4].symbol)->getName().c_str());
 		}
-#line 1828 "y.tab.c"
+#line 1849 "y.tab.c"
     break;
 
   case 15: /* parameter_list: parameter_list COMMA type_specifier ID  */
-#line 429 "1805077.y"
+#line 450 "1805077.y"
                 {
 			(yyval.symbol) = new SymbolInfo((yyvsp[-3].symbol)->getName() + "," + (yyvsp[-1].symbol)->getName() + " " + (yyvsp[0].symbol)->getName(), (yyvsp[-3].symbol)->getType() + "," + (yyvsp[-1].symbol)->getType());
 			fprintf(logout, "Line %d: parameter_list : parameter_list COMMA type_specifier ID\n\n%s\n\n",  lineCount, (yyval.symbol)->getName().c_str());
 		}
-#line 1837 "y.tab.c"
+#line 1858 "y.tab.c"
     break;
 
   case 16: /* parameter_list: parameter_list COMMA type_specifier  */
-#line 434 "1805077.y"
+#line 455 "1805077.y"
                 {
 			(yyval.symbol) = new SymbolInfo((yyvsp[-2].symbol)->getName() + "," + (yyvsp[0].symbol)->getName(), (yyvsp[-2].symbol)->getType() + "," + (yyvsp[0].symbol)->getType());
 			fprintf(logout, "Line %d: parameter_list : parameter_list COMMA type_specifier\n\n%s\n\n",  lineCount, (yyval.symbol)->getName().c_str());
 		}
-#line 1846 "y.tab.c"
+#line 1867 "y.tab.c"
     break;
 
   case 17: /* parameter_list: type_specifier ID  */
-#line 439 "1805077.y"
+#line 460 "1805077.y"
                 {
 			(yyval.symbol) = new SymbolInfo((yyvsp[-1].symbol)->getName() + " " + (yyvsp[0].symbol)->getName(), (yyvsp[-1].symbol)->getType());
 			fprintf(logout, "Line %d: parameter_list : type_specifier ID\n\n%s\n\n",  lineCount, (yyval.symbol)->getName().c_str());
 		}
-#line 1855 "y.tab.c"
+#line 1876 "y.tab.c"
     break;
 
   case 18: /* parameter_list: type_specifier  */
-#line 444 "1805077.y"
+#line 465 "1805077.y"
                 {
 			(yyval.symbol) = (yyvsp[0].symbol);
 			fprintf(logout, "Line %d: parameter_list : type_specifier\n\n%s\n\n",  lineCount, (yyval.symbol)->getName().c_str());
 		}
-#line 1864 "y.tab.c"
+#line 1885 "y.tab.c"
     break;
 
   case 19: /* parameter_list: parameter_list error  */
-#line 448 "1805077.y"
+#line 469 "1805077.y"
                                        {}
-#line 1870 "y.tab.c"
+#line 1891 "y.tab.c"
     break;
 
   case 20: /* compound_statement: LCURL enter_scope statements RCURL  */
-#line 453 "1805077.y"
+#line 474 "1805077.y"
                         {
 				
 
@@ -1881,11 +1902,11 @@ yyreduce:
 				table.exitScope();
 				
 			}
-#line 1885 "y.tab.c"
+#line 1906 "y.tab.c"
     break;
 
   case 21: /* compound_statement: LCURL enter_scope RCURL  */
-#line 464 "1805077.y"
+#line 485 "1805077.y"
                         {
 				(yyval.symbol) = new SymbolInfo("{\n}\n","compound_statement");
 				fprintf(logout, "Line %d: compound_statement : LCURL RCURL\n\n%s\n\n",  lineCount, (yyval.symbol)->getName().c_str());
@@ -1893,11 +1914,11 @@ yyreduce:
 				fprintf(logout, "\n\n%s\n\n", table.printAllScope().c_str());
 				table.exitScope();
 			}
-#line 1897 "y.tab.c"
+#line 1918 "y.tab.c"
     break;
 
   case 22: /* enter_scope: %empty  */
-#line 473 "1805077.y"
+#line 494 "1805077.y"
                         {
 				table.enterScope();
 				if ((parameterNameList.size() != parameterTypeList.size())) {
@@ -1918,11 +1939,11 @@ yyreduce:
 				clearParameterNameList();
 				clearParameterTypeList();
 			}
-#line 1922 "y.tab.c"
+#line 1943 "y.tab.c"
     break;
 
   case 23: /* var_declaration: type_specifier declaration_list SEMICOLON  */
-#line 496 "1805077.y"
+#line 517 "1805077.y"
                 {
 			string varType = (yyvsp[-2].symbol)->getName();
 			string varList = (yyvsp[-1].symbol)->getName();
@@ -1994,48 +2015,48 @@ yyreduce:
 
 			fprintf(logout, "Line %d: var_declaration : type_specifier declaration_list SEMICOLON\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		}
-#line 1998 "y.tab.c"
+#line 2019 "y.tab.c"
     break;
 
   case 24: /* type_specifier: INT  */
-#line 570 "1805077.y"
+#line 591 "1805077.y"
                 {
 			(yyval.symbol)= new SymbolInfo("int","int");
 			fprintf(logout, "Line %d: type_specifier : INT\n\nint\n\n", lineCount);
 		}
-#line 2007 "y.tab.c"
+#line 2028 "y.tab.c"
     break;
 
   case 25: /* type_specifier: FLOAT  */
-#line 575 "1805077.y"
+#line 596 "1805077.y"
                 {
 			(yyval.symbol)= new SymbolInfo("float","float");
 			fprintf(logout, "Line %d: type_specifier : FLOAT\n\nfloat\n\n", lineCount);
 		}
-#line 2016 "y.tab.c"
+#line 2037 "y.tab.c"
     break;
 
   case 26: /* type_specifier: VOID  */
-#line 580 "1805077.y"
+#line 601 "1805077.y"
                 {
 			(yyval.symbol)= new SymbolInfo("void","void");
 			fprintf(logout, "Line %d: type_specifier : VOID\n\nvoid\n\n", lineCount);
 		}
-#line 2025 "y.tab.c"
+#line 2046 "y.tab.c"
     break;
 
   case 27: /* declaration_list: declaration_list COMMA ID  */
-#line 587 "1805077.y"
+#line 608 "1805077.y"
                   {
 			(yyval.symbol) = new SymbolInfo((yyvsp[-2].symbol)->getName()+","+(yyvsp[0].symbol)->getName(), "declaration_list");
 			fprintf(logout, "Line %d: declaration_list : declaration_list COMMA ID\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 			
 		  }
-#line 2035 "y.tab.c"
+#line 2056 "y.tab.c"
     break;
 
   case 28: /* declaration_list: declaration_list COMMA ID LTHIRD CONST_INT RTHIRD  */
-#line 593 "1805077.y"
+#line 614 "1805077.y"
                   {
 			if((yyvsp[-1].symbol)->getName()=="0"){
 				errorCount++;
@@ -2047,21 +2068,21 @@ yyreduce:
 			fprintf(logout, "Line %d: declaration_list : declaration_list COMMA ID LTHIRD CONST_INT RTHIRD\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 			
 		  }
-#line 2051 "y.tab.c"
+#line 2072 "y.tab.c"
     break;
 
   case 29: /* declaration_list: ID  */
-#line 605 "1805077.y"
+#line 626 "1805077.y"
                   {
 			(yyval.symbol) = new SymbolInfo((yyvsp[0].symbol)->getName(), "declaration_list");
 			fprintf(logout, "Line %d: declaration_list : ID\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 			
 		  }
-#line 2061 "y.tab.c"
+#line 2082 "y.tab.c"
     break;
 
   case 30: /* declaration_list: ID LTHIRD CONST_INT RTHIRD  */
-#line 611 "1805077.y"
+#line 632 "1805077.y"
                   {
 			if((yyvsp[-1].symbol)->getName()=="0"){
 				errorCount++;
@@ -2073,11 +2094,11 @@ yyreduce:
 			fprintf(logout, "Line %d: declaration_list : ID LTHIRD CONST_INT RTHIRD\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 			
 		  }
-#line 2077 "y.tab.c"
+#line 2098 "y.tab.c"
     break;
 
   case 31: /* declaration_list: ID LTHIRD RTHIRD  */
-#line 623 "1805077.y"
+#line 644 "1805077.y"
                   {
 			errorCount++;
 			fprintf(errorout, "Error at line %d: Array size undefined\n\n", lineCount);
@@ -2087,11 +2108,11 @@ yyreduce:
 			fprintf(logout, "Line %d: declaration_list : ID LTHIRD RTHIRD\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 			
 		  }
-#line 2091 "y.tab.c"
+#line 2112 "y.tab.c"
     break;
 
   case 32: /* declaration_list: declaration_list COMMA ID LTHIRD RTHIRD  */
-#line 633 "1805077.y"
+#line 654 "1805077.y"
                   {
 			errorCount++;
 			fprintf(errorout, "Error at line %d: Array size undefined\n\n", lineCount);
@@ -2100,11 +2121,11 @@ yyreduce:
 			(yyval.symbol) = new SymbolInfo((yyvsp[-4].symbol)->getName()+","+(yyvsp[-2].symbol)->getName()+"[]", "declaration_list");
 			fprintf(logout, "Line %d: declaration_list : declaration_list COMMA ID LTHIRD RTHIRD\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		  }
-#line 2104 "y.tab.c"
+#line 2125 "y.tab.c"
     break;
 
   case 33: /* declaration_list: ID LTHIRD CONST_FLOAT RTHIRD  */
-#line 642 "1805077.y"
+#line 663 "1805077.y"
                   {
 			errorCount++;
 			fprintf(errorout, "Error at line %d: Expression inside third brackets not an integer\n\n", lineCount);
@@ -2114,11 +2135,11 @@ yyreduce:
 			fprintf(logout, "Line %d: declaration_list : ID LTHIRD CONST_FLOAT RTHIRD\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 			
 		  }
-#line 2118 "y.tab.c"
+#line 2139 "y.tab.c"
     break;
 
   case 34: /* declaration_list: declaration_list COMMA ID LTHIRD CONST_FLOAT RTHIRD  */
-#line 652 "1805077.y"
+#line 673 "1805077.y"
                   {
 			errorCount++;
 			fprintf(errorout, "Error at line %d: Expression inside third brackets not an integer\n\n", lineCount);
@@ -2127,80 +2148,80 @@ yyreduce:
 			(yyval.symbol) = new SymbolInfo((yyvsp[-5].symbol)->getName()+","+(yyvsp[-3].symbol)->getName()+"["+(yyvsp[-1].symbol)->getName()+"]", "declaration_list");
 			fprintf(logout, "Line %d: declaration_list COMMA ID LTHIRD CONST_FLOAT RTHIRD\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		  }
-#line 2131 "y.tab.c"
+#line 2152 "y.tab.c"
     break;
 
   case 35: /* declaration_list: declaration_list error  */
-#line 660 "1805077.y"
+#line 681 "1805077.y"
                                            {}
-#line 2137 "y.tab.c"
+#line 2158 "y.tab.c"
     break;
 
   case 36: /* statements: statement  */
-#line 664 "1805077.y"
+#line 685 "1805077.y"
                 {
 			(yyval.symbol)=(yyvsp[0].symbol);
 			fprintf(logout, "Line %d: statements : statement\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		}
-#line 2146 "y.tab.c"
+#line 2167 "y.tab.c"
     break;
 
   case 37: /* statements: statements statement  */
-#line 669 "1805077.y"
+#line 690 "1805077.y"
             {
 			(yyval.symbol) = new SymbolInfo((yyvsp[-1].symbol)->getName()+"\n"+(yyvsp[0].symbol)->getName(), "statements");
 			
 			fprintf(logout, "Line %d: statements : statements statement\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 			
 	    }
-#line 2157 "y.tab.c"
+#line 2178 "y.tab.c"
     break;
 
   case 38: /* statements: statements error  */
-#line 675 "1805077.y"
+#line 696 "1805077.y"
                               {}
-#line 2163 "y.tab.c"
+#line 2184 "y.tab.c"
     break;
 
   case 39: /* statement: var_declaration  */
-#line 679 "1805077.y"
+#line 700 "1805077.y"
           {
 		(yyval.symbol)=(yyvsp[0].symbol);
 		fprintf(logout, "Line %d: statement : var_declaration\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 	  }
-#line 2172 "y.tab.c"
+#line 2193 "y.tab.c"
     break;
 
   case 40: /* statement: expression_statement  */
-#line 684 "1805077.y"
+#line 705 "1805077.y"
           {
 		(yyval.symbol)=(yyvsp[0].symbol);
 		fprintf(logout, "Line %d: statement : expression_statement\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 	  }
-#line 2181 "y.tab.c"
+#line 2202 "y.tab.c"
     break;
 
   case 41: /* statement: compound_statement  */
-#line 689 "1805077.y"
+#line 710 "1805077.y"
           {
 		(yyval.symbol)=(yyvsp[0].symbol);
 		fprintf(logout, "Line %d: statement : compound_statement\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 	  }
-#line 2190 "y.tab.c"
+#line 2211 "y.tab.c"
     break;
 
   case 42: /* $@4: %empty  */
-#line 693 "1805077.y"
+#line 714 "1805077.y"
                                             {
 		forCount++;
 		forCountStack.push(forCount);
 		fprintf(asmout, "%s: ; for loop starting label\n", ("label_for_start_"+to_string(forCountStack.top())).c_str());
 	  }
-#line 2200 "y.tab.c"
+#line 2221 "y.tab.c"
     break;
 
   case 43: /* $@5: %empty  */
-#line 697 "1805077.y"
+#line 718 "1805077.y"
                                  {
 	  	fprintf(asmout, "CMP AX, 0\n");
 	  	fprintf(asmout, "JE %s ; loop ending condn\n", ("label_for_end_"+to_string(forCountStack.top())).c_str());
@@ -2208,20 +2229,20 @@ yyreduce:
 	  	fprintf(asmout, "%s: ; loop iterator inc/dec\n", ("label_for_ite_"+to_string(forCountStack.top())).c_str());
 	  	
 	  }
-#line 2212 "y.tab.c"
+#line 2233 "y.tab.c"
     break;
 
   case 44: /* $@6: %empty  */
-#line 703 "1805077.y"
+#line 724 "1805077.y"
                               {
 		fprintf(asmout, "JMP %s ; restart loop\n", ("label_for_start_"+to_string(forCountStack.top())).c_str());
 		fprintf(asmout, "%s: ; loop code\n", ("label_for_stmt_"+to_string(forCountStack.top())).c_str());
 	  }
-#line 2221 "y.tab.c"
+#line 2242 "y.tab.c"
     break;
 
   case 45: /* statement: FOR LPAREN expression_statement $@4 expression_statement $@5 expression RPAREN $@6 statement  */
-#line 707 "1805077.y"
+#line 728 "1805077.y"
           {
 		(yyval.symbol) = new SymbolInfo("for("+(yyvsp[-7].symbol)->getName()+(yyvsp[-5].symbol)->getName()+(yyvsp[-3].symbol)->getName()+")"+(yyvsp[0].symbol)->getName(), "statement");
 		fprintf(logout, "Line %d: statement : FOR LPAREN expression_statement expression_statement expression RPAREN statement\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
@@ -2230,63 +2251,63 @@ yyreduce:
 	  	fprintf(asmout, "%s: ; end of for loop\n", ("label_for_end_"+to_string(forCountStack.top())).c_str());
 	  	forCountStack.pop();
 	  }
-#line 2234 "y.tab.c"
+#line 2255 "y.tab.c"
     break;
 
   case 46: /* statement: if_expr statement  */
-#line 716 "1805077.y"
+#line 737 "1805077.y"
           {
 		(yyval.symbol) = new SymbolInfo((yyvsp[-1].symbol)->getName()+(yyvsp[0].symbol)->getName(), "statement");
 		fprintf(logout, "Line %d: statement : IF LPAREN expression RPAREN statement\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		fprintf(asmout, "%s: ; end if label\n", ("label_else_"+to_string(ifCountStack.top())).c_str());
 		ifCountStack.pop();
 	  }
-#line 2245 "y.tab.c"
+#line 2266 "y.tab.c"
     break;
 
   case 47: /* $@7: %empty  */
-#line 722 "1805077.y"
+#line 743 "1805077.y"
                                    {
 		// labelEndIf= "label_endif_"+to_string(ifCount);
 		fprintf(asmout, "JMP %s\n", ("label_endif_"+to_string(ifCountStack.top())).c_str());
 		fprintf(asmout, "%s: ; else label\n", ("label_else_"+to_string(ifCountStack.top())).c_str());
 	  }
-#line 2255 "y.tab.c"
+#line 2276 "y.tab.c"
     break;
 
   case 48: /* statement: if_expr statement ELSE $@7 statement  */
-#line 727 "1805077.y"
+#line 748 "1805077.y"
           {
 		(yyval.symbol) = new SymbolInfo((yyvsp[-4].symbol)->getName()+(yyvsp[-3].symbol)->getName()+"else\n"+(yyvsp[0].symbol)->getName(), "statement");
 		fprintf(logout, "Line %d: statement : IF LPAREN expression RPAREN statement ELSE statement\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		fprintf(asmout, "%s: ; end if label\n", ("label_endif_"+to_string(ifCountStack.top())).c_str());
 		ifCountStack.pop();
 	  }
-#line 2266 "y.tab.c"
+#line 2287 "y.tab.c"
     break;
 
   case 49: /* $@8: %empty  */
-#line 734 "1805077.y"
+#line 755 "1805077.y"
           {
 		whileCount++;
 		whileCountStack.push(whileCount);
 		// labelLoopStart= "label_while_start_"+to_string(whileCount);
 		fprintf(asmout, "%s: ; while loop begin\n", ("label_while_start_"+to_string(whileCountStack.top())).c_str());
 	  }
-#line 2277 "y.tab.c"
+#line 2298 "y.tab.c"
     break;
 
   case 50: /* $@9: %empty  */
-#line 740 "1805077.y"
+#line 761 "1805077.y"
           {
 		// labelLoopEnd= "label_while_end_"+to_string(whileCount);
 		fprintf(asmout, "POP CX\nCMP CX, 0\nJE %s\n", ("label_while_end_"+to_string(whileCountStack.top())).c_str());
 	  }
-#line 2286 "y.tab.c"
+#line 2307 "y.tab.c"
     break;
 
   case 51: /* statement: WHILE $@8 LPAREN expression RPAREN $@9 statement  */
-#line 744 "1805077.y"
+#line 765 "1805077.y"
           {
 		(yyval.symbol) = new SymbolInfo("while("+(yyvsp[-3].symbol)->getName()+")"+(yyvsp[0].symbol)->getName(), "statement");
 		fprintf(logout, "Line %d: statement : WHILE LPAREN expression RPAREN statement\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
@@ -2294,11 +2315,11 @@ yyreduce:
 		fprintf(asmout, "JMP %s ; back to top of loop\n%s:\n", ("label_while_start_"+to_string(whileCountStack.top())).c_str(), ("label_while_end_"+to_string(whileCountStack.top())).c_str());
 		whileCountStack.pop();
 	  }
-#line 2298 "y.tab.c"
+#line 2319 "y.tab.c"
     break;
 
   case 52: /* statement: PRINTLN LPAREN ID RPAREN SEMICOLON  */
-#line 752 "1805077.y"
+#line 773 "1805077.y"
           { // move to AX from stack 
 		SymbolInfo *temp = table.lookUpSymbol((yyvsp[-2].symbol)->getName());
 		// handle undeclared variable error
@@ -2313,11 +2334,11 @@ yyreduce:
 		if(temp->isGlobal()) fprintf(asmout, "MOV AX, %s\nCALL PRINT ; argument %s in AX\n", temp->getName().c_str(), temp->getName().c_str());
 		else fprintf(asmout, "MOV AX, %d[BP]\nCALL PRINT ; argument %s in AX\n", temp->getStackOffset(), temp->getName().c_str());
 	  }
-#line 2317 "y.tab.c"
+#line 2338 "y.tab.c"
     break;
 
   case 53: /* statement: RETURN expression SEMICOLON  */
-#line 767 "1805077.y"
+#line 788 "1805077.y"
           { // jump to label of current function
 	  	//! return value should be in AX
 		// check return type in func_defn and decl
@@ -2341,11 +2362,11 @@ yyreduce:
 		fprintf(asmout, "\tJMP %s_EXIT\n", currentFunc.c_str());
 		
 	  }
-#line 2345 "y.tab.c"
+#line 2366 "y.tab.c"
     break;
 
   case 54: /* if_expr: IF LPAREN expression RPAREN  */
-#line 793 "1805077.y"
+#line 814 "1805077.y"
         {
 		ifCount++;
 		ifCountStack.push(ifCount);
@@ -2354,30 +2375,30 @@ yyreduce:
 		fprintf(asmout, "JE %s\n", ("label_else_"+to_string(ifCountStack.top())).c_str());
 		(yyval.symbol)= new SymbolInfo("if("+(yyvsp[-1].symbol)->getName()+")", "statement");
 	}
-#line 2358 "y.tab.c"
+#line 2379 "y.tab.c"
     break;
 
   case 55: /* expression_statement: SEMICOLON  */
-#line 803 "1805077.y"
+#line 824 "1805077.y"
                         {
 				(yyval.symbol) = new SymbolInfo(";", "expression_statement");
 				fprintf(logout, "Line %d: expression_statement : SEMICOLON\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 			}
-#line 2367 "y.tab.c"
+#line 2388 "y.tab.c"
     break;
 
   case 56: /* expression_statement: expression SEMICOLON  */
-#line 808 "1805077.y"
+#line 829 "1805077.y"
                         {
 				(yyval.symbol) = new SymbolInfo((yyvsp[-1].symbol)->getName()+";", "expression_statement");
 				fprintf(logout, "Line %d: expression_statement : expression SEMICOLON\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 				fprintf(asmout, "POP AX\n");
 			}
-#line 2377 "y.tab.c"
+#line 2398 "y.tab.c"
     break;
 
   case 57: /* variable: ID  */
-#line 816 "1805077.y"
+#line 837 "1805077.y"
          {
 		SymbolInfo *temp = table.lookUpSymbol((yyvsp[0].symbol)->getName());
 		//handle undeclared variable error
@@ -2399,11 +2420,11 @@ yyreduce:
 		fprintf(logout, "Line %d: variable : ID\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		
 	 }
-#line 2403 "y.tab.c"
+#line 2424 "y.tab.c"
     break;
 
   case 58: /* variable: ID LTHIRD expression RTHIRD  */
-#line 838 "1805077.y"
+#line 859 "1805077.y"
          {
 		SymbolInfo *temp = table.lookUpSymbol((yyvsp[-3].symbol)->getName());
 		if(temp==nullptr){
@@ -2422,7 +2443,7 @@ yyreduce:
 					fprintf(logout, "Error at line %d: Expression inside third brackets not an integer\n\n", lineCount);
 				}
 				if(temp->isGlobal()) {
-					fprintf(asmout, "POP BX ; popped index expr\nSHL BX, 1\nMOV SI, %s\nMOV AX, BX[SI]\n ; %s called\n", temp->getName().c_str(), temp->getName().c_str()); //! handle global array index calc
+					fprintf(asmout, "POP BX ; popped index expr\nSHL BX, 1\nMOV SI, %s\nMOV AX, BX[SI]\n ; %s called\n", temp->getName().c_str(), temp->getName().c_str()); 
 				} else {
 					fprintf(asmout, "POP BX ; popped index expr %s\nSHL BX, 1\nADD BX, %d\n;ADD BX, BP\nPUSH BP\nADD BP, BX\nMOV AX, [BP]\nPOP BP\n;MOV AX, [BX]\nPUSH AX ; value of %s[%s]\nPUSH BX ; index %s\n",
 						(yyvsp[-1].symbol)->getName().c_str(), temp->getStackOffset(), temp->getName().c_str(), (yyvsp[-1].symbol)->getName().c_str(), (yyvsp[-1].symbol)->getName().c_str());
@@ -2439,11 +2460,11 @@ yyreduce:
 		}
 		fprintf(logout, "Line %d: variable : ID LTHIRD expression RTHIRD\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 	 }
-#line 2443 "y.tab.c"
+#line 2464 "y.tab.c"
     break;
 
   case 59: /* variable: ID LTHIRD RTHIRD  */
-#line 874 "1805077.y"
+#line 895 "1805077.y"
          {
 		SymbolInfo *temp = table.lookUpSymbol((yyvsp[-2].symbol)->getName());
 		if(temp==nullptr){
@@ -2471,20 +2492,20 @@ yyreduce:
 		fprintf(logout, "Line %d: variable : ID LTHIRD expression RTHIRD\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		
 	 }
-#line 2475 "y.tab.c"
+#line 2496 "y.tab.c"
     break;
 
   case 60: /* expression: logic_expression  */
-#line 904 "1805077.y"
+#line 925 "1805077.y"
                 {
 			(yyval.symbol)=(yyvsp[0].symbol);
 			fprintf(logout, "Line %d: expression : logic_expression\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		}
-#line 2484 "y.tab.c"
+#line 2505 "y.tab.c"
     break;
 
   case 61: /* expression: variable ASSIGNOP logic_expression  */
-#line 909 "1805077.y"
+#line 930 "1805077.y"
                 {
 			// bunch of type mismatch handling (but int in float is allowed)
 			if ((yyvsp[-2].symbol)->getType()=="void" || (yyvsp[0].symbol)->getType()=="void"){
@@ -2528,20 +2549,20 @@ yyreduce:
 			fprintf(logout, "Line %d: expression : variable ASSIGNOP logic_expression\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 			
 	   	}
-#line 2532 "y.tab.c"
+#line 2553 "y.tab.c"
     break;
 
   case 62: /* logic_expression: rel_expression  */
-#line 955 "1805077.y"
+#line 976 "1805077.y"
                 {
 			(yyval.symbol)=(yyvsp[0].symbol);
 			fprintf(logout, "Line %d: logic_expression : rel_expression\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		}
-#line 2541 "y.tab.c"
+#line 2562 "y.tab.c"
     break;
 
   case 63: /* logic_expression: rel_expression LOGICOP rel_expression  */
-#line 960 "1805077.y"
+#line 981 "1805077.y"
                 {
 			if ((yyvsp[-2].symbol)->getType()=="void" || (yyvsp[0].symbol)->getType()=="void"){
 				errorCount++;
@@ -2568,20 +2589,20 @@ yyreduce:
 			} 
 
 		}
-#line 2572 "y.tab.c"
+#line 2593 "y.tab.c"
     break;
 
   case 64: /* rel_expression: simple_expression  */
-#line 989 "1805077.y"
+#line 1010 "1805077.y"
                 {
 			(yyval.symbol)=(yyvsp[0].symbol);
 			fprintf(logout, "Line %d: rel_expression : simple_expression\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		}
-#line 2581 "y.tab.c"
+#line 2602 "y.tab.c"
     break;
 
   case 65: /* rel_expression: simple_expression RELOP simple_expression  */
-#line 994 "1805077.y"
+#line 1015 "1805077.y"
                 {
 			if ((yyvsp[-2].symbol)->getType()=="void" || (yyvsp[0].symbol)->getType()=="void"){
 				errorCount++;
@@ -2622,20 +2643,20 @@ yyreduce:
 			}
 
 		}
-#line 2626 "y.tab.c"
+#line 2647 "y.tab.c"
     break;
 
   case 66: /* simple_expression: term  */
-#line 1037 "1805077.y"
+#line 1058 "1805077.y"
                 {
 			(yyval.symbol)=(yyvsp[0].symbol);
 			fprintf(logout, "Line %d: simple_expression : term\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		}
-#line 2635 "y.tab.c"
+#line 2656 "y.tab.c"
     break;
 
   case 67: /* simple_expression: simple_expression ADDOP term  */
-#line 1042 "1805077.y"
+#line 1063 "1805077.y"
                 {	// add and keep in AX
 			// handle int addition and float addition
 			string exprType;
@@ -2652,26 +2673,26 @@ yyreduce:
 			(yyval.symbol)->setName((yyvsp[-2].symbol)->getName()+(yyvsp[-1].symbol)->getName()+(yyvsp[0].symbol)->getName());
 			fprintf(logout, "Line %d: simple_expression : simple_expression ADDOP term\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		}
-#line 2656 "y.tab.c"
+#line 2677 "y.tab.c"
     break;
 
   case 68: /* simple_expression: simple_expression error  */
-#line 1057 "1805077.y"
+#line 1078 "1805077.y"
                                             {}
-#line 2662 "y.tab.c"
+#line 2683 "y.tab.c"
     break;
 
   case 69: /* term: unary_expression  */
-#line 1061 "1805077.y"
+#line 1082 "1805077.y"
          {
 		(yyval.symbol)=(yyvsp[0].symbol);
 		fprintf(logout, "Line %d: term : unary_expression\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 	 }
-#line 2671 "y.tab.c"
+#line 2692 "y.tab.c"
     break;
 
   case 70: /* term: term MULOP unary_expression  */
-#line 1066 "1805077.y"
+#line 1087 "1805077.y"
          {
 		//handle errors
 		if ((yyvsp[-2].symbol)->getType()=="void" || (yyvsp[0].symbol)->getType()=="void"){
@@ -2709,11 +2730,11 @@ yyreduce:
 		fprintf(logout, "Line %d: term : term MULOP unary_expression\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		
 	 }
-#line 2713 "y.tab.c"
+#line 2734 "y.tab.c"
     break;
 
   case 71: /* unary_expression: ADDOP unary_expression  */
-#line 1106 "1805077.y"
+#line 1127 "1805077.y"
                  {
 			if ((yyvsp[0].symbol)->getType()=="void"){
 				errorCount++;
@@ -2730,11 +2751,11 @@ yyreduce:
 			(yyval.symbol) = new SymbolInfo((yyvsp[-1].symbol)->getName()+(yyvsp[0].symbol)->getName(), (yyvsp[0].symbol)->getType());
 			fprintf(logout, "Line %d: unary_expression : ADDOP unary_expression\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		 }
-#line 2734 "y.tab.c"
+#line 2755 "y.tab.c"
     break;
 
   case 72: /* unary_expression: NOT unary_expression  */
-#line 1123 "1805077.y"
+#line 1144 "1805077.y"
                  {
 			if ((yyvsp[0].symbol)->getType()=="void"){
 				errorCount++;
@@ -2749,31 +2770,31 @@ yyreduce:
 				\n%s:\nXOR AX, AX\n%s:\nPUSH AX\n"
 				, (yyvsp[0].symbol)->getName().c_str(), labelIfTrue.c_str(), labelIfFalse.c_str(), labelIfTrue.c_str(), labelIfFalse.c_str());
 		 }
-#line 2753 "y.tab.c"
+#line 2774 "y.tab.c"
     break;
 
   case 73: /* unary_expression: factor  */
-#line 1138 "1805077.y"
+#line 1159 "1805077.y"
                  {
 			(yyval.symbol)=(yyvsp[0].symbol);
 			fprintf(logout, "Line %d: unary_expression : factor\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		 }
-#line 2762 "y.tab.c"
+#line 2783 "y.tab.c"
     break;
 
   case 74: /* factor: variable  */
-#line 1145 "1805077.y"
+#line 1166 "1805077.y"
         {
 		(yyval.symbol)=(yyvsp[0].symbol);
 		fprintf(logout, "Line %d: factor : variable\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 		if ((yyval.symbol)->getName().find("[") != string::npos)
 			fprintf(asmout, "POP BX ; r-value, no need for index\n");
 	}
-#line 2773 "y.tab.c"
+#line 2794 "y.tab.c"
     break;
 
   case 75: /* factor: ID LPAREN argument_list RPAREN  */
-#line 1152 "1805077.y"
+#line 1173 "1805077.y"
         {
 		string returnType= "factor";
 		string funcName = (yyvsp[-3].symbol)->getName();
@@ -2789,10 +2810,14 @@ yyreduce:
 				FunctionInfo* ftemp= (FunctionInfo*) temp;
 				returnType= ftemp->getReturnType();
 				splitParameterTypeList((yyvsp[-1].symbol)->getType(),',');
+				// cout<<parameterTypeList[0]<<" "<<ftemp->getParameterTypeList().size()<<endl;
 				if(parameterTypeList.size()!=ftemp->getParameterTypeList().size()){
-					errorCount++;
-					fprintf(errorout, "Error at line %d: Total number of arguments mismatch in function %s\n\n", lineCount, funcName.c_str());
-					fprintf(logout, "Error at line %d: Total number of arguments mismatch in function %s\n\n", lineCount, funcName.c_str());
+					if(parameterTypeList[0]=="void");
+					else {
+						errorCount++;
+						fprintf(errorout, "Error at line %d: Total number of arguments mismatch in function %s\n\n", lineCount, funcName.c_str());
+						fprintf(logout, "Error at line %d: Total number of arguments mismatch in function %s\n\n", lineCount, funcName.c_str());
+					}
 				}
 				else {
 					for(int i=0; i<ftemp->getParameterTypeList().size(); i++){
@@ -2827,40 +2852,40 @@ yyreduce:
 			fprintf(asmout, "PUSH AX ; return value of %s\n", (yyvsp[-3].symbol)->getName().c_str());
 		}
 	}
-#line 2831 "y.tab.c"
+#line 2856 "y.tab.c"
     break;
 
   case 76: /* factor: LPAREN expression RPAREN  */
-#line 1206 "1805077.y"
+#line 1231 "1805077.y"
         {
 		(yyval.symbol) = new SymbolInfo("("+(yyvsp[-1].symbol)->getName()+")", (yyvsp[-1].symbol)->getType());
 		fprintf(logout, "Line %d: factor : LPAREN expression RPAREN\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 
 	}
-#line 2841 "y.tab.c"
+#line 2866 "y.tab.c"
     break;
 
   case 77: /* factor: CONST_INT  */
-#line 1212 "1805077.y"
+#line 1237 "1805077.y"
         {
 		(yyval.symbol) = (yyvsp[0].symbol);
 		fprintf(asmout, "PUSH %s\n", (yyval.symbol)->getName().c_str());
 		fprintf(logout, "Line %d: factor : CONST_INT\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 	}
-#line 2851 "y.tab.c"
+#line 2876 "y.tab.c"
     break;
 
   case 78: /* factor: CONST_FLOAT  */
-#line 1218 "1805077.y"
+#line 1243 "1805077.y"
         {
 		(yyval.symbol) = (yyvsp[0].symbol);
 		fprintf(logout, "Line %d: factor : CONST_FLOAT\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 	}
-#line 2860 "y.tab.c"
+#line 2885 "y.tab.c"
     break;
 
   case 79: /* factor: variable INCOP  */
-#line 1223 "1805077.y"
+#line 1248 "1805077.y"
         {
 		(yyval.symbol) = new SymbolInfo((yyvsp[-1].symbol)->getName()+"++",(yyvsp[-1].symbol)->getType());
 		fprintf(logout, "Line %d: factor : variable INCOP\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
@@ -2873,11 +2898,11 @@ yyreduce:
 		}
 		// fprintf(asmout, "INC AX\n");
 	}
-#line 2877 "y.tab.c"
+#line 2902 "y.tab.c"
     break;
 
   case 80: /* factor: variable DECOP  */
-#line 1236 "1805077.y"
+#line 1261 "1805077.y"
         {
 		(yyval.symbol) = new SymbolInfo((yyvsp[-1].symbol)->getName()+"--",(yyvsp[-1].symbol)->getType());
 		fprintf(logout, "Line %d: factor : variable DECOP\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
@@ -2889,51 +2914,51 @@ yyreduce:
 			fprintf(asmout, "DEC AX\nMOV %d[BP], AX\n", (yyvsp[-1].symbol)->getStackOffset());
 		}
 	}
-#line 2893 "y.tab.c"
+#line 2918 "y.tab.c"
     break;
 
   case 81: /* argument_list: arguments  */
-#line 1250 "1805077.y"
+#line 1275 "1805077.y"
                         {
 				(yyval.symbol)=(yyvsp[0].symbol);
 				fprintf(logout, "Line %d: argument_list : arguments\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 			}
-#line 2902 "y.tab.c"
+#line 2927 "y.tab.c"
     break;
 
   case 82: /* argument_list: %empty  */
-#line 1255 "1805077.y"
+#line 1280 "1805077.y"
                         {
 				(yyval.symbol)=new SymbolInfo("", "void");
 				fprintf(logout, "Line %d: argument_list : \n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 			}
-#line 2911 "y.tab.c"
+#line 2936 "y.tab.c"
     break;
 
   case 83: /* arguments: arguments COMMA logic_expression  */
-#line 1262 "1805077.y"
+#line 1287 "1805077.y"
                         {
 				(yyval.symbol) = new SymbolInfo((yyvsp[-2].symbol)->getName()+","+(yyvsp[0].symbol)->getName(),(yyvsp[-2].symbol)->getType()+","+(yyvsp[0].symbol)->getType());
 				fprintf(logout, "Line %d: arguments : arguments COMMA logic_expression\n\n%s\n\n", lineCount, (yyval.symbol)->getName().c_str());
 				// fprintf(asmout, "PUSH AX ; pushing %s as argument\n", $3->getName().c_str());
 
 			}
-#line 2922 "y.tab.c"
+#line 2947 "y.tab.c"
     break;
 
   case 84: /* arguments: logic_expression  */
-#line 1269 "1805077.y"
+#line 1294 "1805077.y"
                         {
 				(yyval.symbol)=(yyvsp[0].symbol);
 				fprintf(logout, "Line %d: arguments : logic_expression\n\n%s\n\n", lineCount, (yyvsp[0].symbol)->getName().c_str());
 				// fprintf(asmout, "PUSH AX ; pushing %s as argument\n", $$->getName().c_str());
 			
 			}
-#line 2933 "y.tab.c"
+#line 2958 "y.tab.c"
     break;
 
 
-#line 2937 "y.tab.c"
+#line 2962 "y.tab.c"
 
       default: break;
     }
@@ -3126,7 +3151,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 1277 "1805077.y"
+#line 1302 "1805077.y"
 
 int main(int argc,char *argv[])
 {
@@ -3159,7 +3184,77 @@ int main(int argc,char *argv[])
 	fclose(logout);
 	fclose(errorout);
 	fclose(asmout);
+
+	if(errorCount>0){
+		asmout= fopen("code.asm","w");
+		fclose(asmout);
+	}
 	
+
+	string line, nextLine;
+	vector<string> portions, nextPortions;
+	lineVector.clear();
+	asmly.open("code.asm");
+	optimizely.open("optimized_code.asm");
+	
+	while (getline (asmly,line)) 
+		lineVector.push_back(line);
+    
+	if(lineVector.size()==0) {
+		asmly.close();
+		optimizely.close();	
+		return 0;
+	}
+
+    for (int i = 0; i < lineVector.size()-1; i++)
+    {
+        if((split(lineVector[i]).size()==0))
+            continue;
+        if((split(lineVector[i])[0].find(";") != string::npos))
+            continue;
+        
+        line=lineVector[i];
+        nextLine=lineVector[i+1];
+        portions=split(line);
+        nextPortions=split(nextLine);
+		if(portions[0]=="PUSH"){
+            if(nextPortions[0]=="POP"){ 
+                if(portions[1]==nextPortions[1]){ // PUSH AX ; POP AX
+                    lineVector[i]=";"+lineVector[i];
+                    lineVector[i+1]=";"+lineVector[i+1];
+                }
+                else { // PUSH 7 ; POP AX
+                    lineVector[i]=";"+lineVector[i];
+                    lineVector[i+1]="MOV "+nextPortions[1]+", "+portions[1];
+                }
+            }
+        } 
+
+        if(portions[0]=="MOVE"){
+            if(portions[1]==portions[2]){ // MOV AX, AX
+                lineVector[i]=";"+lineVector[i];
+            }
+            if(nextPortions[0]=="MOVE"){ 
+                if((portions[1]==nextPortions[2]) && (portions[2]==nextPortions[1])){ // MOV AX, BX ; MOV BX, AX
+                    lineVector[i+1]=";"+lineVector[i+1];
+                }
+                if(portions[1]==nextPortions[1]){ // MOV AX, BX ; MOV AX, CX
+                    lineVector[i]=";"+lineVector[i];
+                }
+            }
+        }
+
+
+    }
+
+
+    for (int i = 0; i < lineVector.size(); i++)
+    	optimizely<<lineVector[i]<<endl;
+    
+	
+	asmly.close();
+	optimizely.close();
+
 	return 0;
 }
 
