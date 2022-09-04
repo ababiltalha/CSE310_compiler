@@ -1385,11 +1385,11 @@ int main(int argc,char *argv[])
             }
         } 
 
-        if(portions[0]=="MOVE"){
+        if(portions[0]=="MOV"){
             if(portions[1]==portions[2]){ // MOV AX, AX
                 lineVector[i]=";"+lineVector[i];
             }
-            if(nextPortions[0]=="MOVE"){ 
+            if(nextPortions[0]=="MOV"){ 
                 if((portions[1]==nextPortions[2]) && (portions[2]==nextPortions[1])){ // MOV AX, BX ; MOV BX, AX
                     lineVector[i+1]=";"+lineVector[i+1];
                 }
